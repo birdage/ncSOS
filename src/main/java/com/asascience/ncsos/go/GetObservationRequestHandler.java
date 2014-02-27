@@ -6,6 +6,8 @@ import com.asascience.ncsos.outputformatter.go.Ioos10Formatter;
 import com.asascience.ncsos.outputformatter.go.OosTethysFormatter;
 import com.asascience.ncsos.service.BaseRequestHandler;
 import com.asascience.ncsos.util.ListComprehension;
+import com.asascience.sos.dataproducts.IDataProduct;
+
 import ucar.nc2.Attribute;
 import ucar.nc2.Variable;
 import ucar.nc2.constants.AxisType;
@@ -49,14 +51,14 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
      * @param latLonRequest map of the latitudes and longitude (points or ranges) from the request
      * @throws IOException 
      */
-    public GetObservationRequestHandler(NetcdfDataset netCDFDataset,
+    public GetObservationRequestHandler(IDataProduct dataset,
                                         String[] requestedProcedures,
                                         String offering,
                                         String[] variableNames,
                                         String[] eventTime,
                                         String responseFormat,
                                         Map<String, String> latLonRequest) throws IOException {
-        super(netCDFDataset);
+        super(dataset);
 
         // Translate back to an URN.  (gml:id fields in XML can't have colons)
         offering = offering.replace("_-_",":");
@@ -86,7 +88,7 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
         for (int i = 0 ; i < variableNames.length ; i++) {
             String vars = variableNames[i];
             boolean isInDataset = false;
-            for (Variable dVar : netCDFDataset.getVariables()) {
+            for (Variable dVar : dataset.getVariables()) {
                 if (dVar.getFullName().equalsIgnoreCase(vars)) {
                     isInDataset = true;
                     break;
@@ -107,7 +109,7 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
             }
         }
 
-        CoordinateAxis heightAxis = netCDFDataset.findCoordinateAxis(AxisType.Height);
+        CoordinateAxis heightAxis = dataset.findCoordinateAxis("AxisType.Height");
 
         this.obsProperties = checkNetcdfFileForAxis(heightAxis, actualVariableNames);
 

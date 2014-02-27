@@ -4,17 +4,15 @@ import com.asascience.ncsos.outputformatter.ErrorFormatter;
 import com.asascience.ncsos.outputformatter.gc.GetCapsFormatter;
 import com.asascience.ncsos.service.BaseRequestHandler;
 import com.asascience.ncsos.util.DatasetHandlerAdapter;
-import ucar.nc2.constants.FeatureType;
-import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.ft.*;
-import ucar.nc2.time.CalendarDate;
-import ucar.nc2.time.CalendarDateRange;
-import ucar.unidata.geoloc.LatLonPointImpl;
-import ucar.unidata.geoloc.LatLonRect;
+import com.asascience.sos.dataproducts.IDataProduct;
+import com.asascience.sos.dataproducts.LatLonRect;
 
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.HashMap;
+
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
 
 /**
  * Creates basic Get Capabilites request handler that can read from a netcdf dataset
@@ -33,9 +31,14 @@ public class GetCapabilitiesRequestHandler extends BaseRequestHandler {
     private String sections;
     private BitSet requestedSections;
     private static final int SECTION_COUNT = 4;
-    private static CalendarDate setStartDate;
-    private static CalendarDate setEndDate;
-    private static HashMap<Integer, CalendarDateRange> stationDateRange;
+    //private static CalendarDate setStartDate;
+    private static DateTime setStartDate;
+    //private static CalendarDate setEndDate;
+    private static DateTime setEndDate;
+    //private static HashMap<Integer, CalendarDateRange> stationDateRange;
+    private static HashMap<Integer, Interval> stationDateRange;
+    
+    //private static HashMap<Integer, LatLonRect> stationBBox;
     private static HashMap<Integer, LatLonRect> stationBBox;
     private static org.slf4j.Logger _log = org.slf4j.LoggerFactory.getLogger(GetCapabilitiesRequestHandler.class);
 
@@ -48,26 +51,11 @@ public class GetCapabilitiesRequestHandler extends BaseRequestHandler {
      * @param sections string detailing what sections of the GC response should be returned
      * @throws IOException
      */
-    public GetCapabilitiesRequestHandler(NetcdfDataset netCDFDataset, String threddsURI, String sections) throws IOException {
-        super(netCDFDataset);
+    public GetCapabilitiesRequestHandler(IDataProduct dataset, String threddsURI, String sections) throws IOException {
+        super(dataset);
         this.threddsURI = threddsURI;
         this.sections = sections.toLowerCase();
         this.formatter = new GetCapsFormatter(this);
-
-        if (getFeatureDataset() == null) {
-            // error, couldn't read dataset
-            formatter = new ErrorFormatter();
-            StringBuffer sb = new StringBuffer();
-            if(netCDFDataset == null) {
-              ((ErrorFormatter)formatter).setException("Unable to read the dataset's feature type. NULL dataset.");
-            } else if(FeatureDatasetFactoryManager.findFeatureType(netCDFDataset) == null) {
-              ((ErrorFormatter)formatter).setException("Unable to read the dataset's feature type. Null feature type reported by netCDF");
-            } else {
-              ((ErrorFormatter)formatter).setException("Unable to read the dataset's feature type. Reported as " + FeatureDatasetFactoryManager.findFeatureType(netCDFDataset).toString() + "; unable to process.");
-            }
-            return;
-        }
-
         SetSectionBits();
         CalculateBoundsForFeatureSet();
     }
@@ -126,224 +114,40 @@ public class GetCapabilitiesRequestHandler extends BaseRequestHandler {
             // network-all
             // get the bounds
             Double latMin = Double.MAX_VALUE, latMax = Double.NEGATIVE_INFINITY, lonMin = Double.MAX_VALUE, lonMax = Double.NEGATIVE_INFINITY;
+            
             for (LatLonRect rect : stationBBox.values()) {
                 latMin = (latMin > rect.getLatMin()) ? rect.getLatMin() : latMin;
                 latMax = (latMax < rect.getLatMax()) ? rect.getLatMax() : latMax;
                 lonMin = (lonMin > rect.getLonMin()) ? rect.getLonMin() : lonMin;
                 lonMax = (lonMax < rect.getLonMax()) ? rect.getLonMax() : lonMax;
             }
-            LatLonRect setRange = new LatLonRect(new LatLonPointImpl(latMin, lonMin), new LatLonPointImpl(latMax, lonMax));
-            CalendarDateRange setTime = null;
+            
+            LatLonRect setRange = new LatLonRect(latMin, lonMin, latMax, lonMax);
+            
+            Interval setTime = null;
             if (setStartDate != null && setEndDate != null) {
-                setTime = CalendarDateRange.of(setStartDate, setEndDate);
+                setTime = new Interval(setStartDate, setEndDate);
             }
 
-            out.setObservationOfferingNetwork(setRange, getStationNames().values().toArray(new String[getStationNames().values().size()]), getSensorNames(), setTime, this.getFeatureDataset().getFeatureType());
+            out.setObservationOfferingNetwork(setRange, getStationNames().values().toArray(new String[getStationNames().values().size()]), getSensorNames(), setTime);
             // Add an offering for every station
             for (Integer index : getStationNames().keySet()) {
-                ((GetCapsFormatter) formatter).setObservationOffering(this.getUrnName(getStationNames().get(index)), stationBBox.get(index), getSensorNames(), stationDateRange.get(index), this.getFeatureDataset().getFeatureType());
+                ((GetCapsFormatter) formatter).setObservationOffering(this.getUrnName(getStationNames().get(index)), stationBBox.get(index), getSensorNames(), stationDateRange.get(index));
             }
         } else {
             // remove Contents node
             out.removeContents();
         }
     }
+    
+    
 
     private void CalculateBoundsForFeatureSet() throws IOException {
-        FeatureType featype = this.getDatasetFeatureType();
-        if (featype != null) {
-            this.stationDateRange = new HashMap<Integer, CalendarDateRange>();
-            this.stationBBox = new HashMap<Integer, LatLonRect>();
-            CalendarDate start = null, end = null;
-            int stationIndex = 0;
-            switch (featype) {
-                case TRAJECTORY:
-                    try {
-                        TrajectoryFeatureCollection collection = (TrajectoryFeatureCollection) getFeatureTypeDataSet();
-                        collection.resetIteration();
-                        while (collection.hasNext()) {
-                            TrajectoryFeature feature = collection.next();
-                            if (DatasetHandlerAdapter.calcBounds(feature)) {
-                                if (start == null || start.isAfter(feature.getCalendarDateRange().getStart())) {
-                                    start = feature.getCalendarDateRange().getStart();
-                                }
-                                if (end == null || end.isBefore(feature.getCalendarDateRange().getEnd())) {
-                                    end = feature.getCalendarDateRange().getEnd();
-                                }
-                                this.stationDateRange.put(stationIndex, feature.getCalendarDateRange());
-                                this.stationBBox.put(stationIndex, feature.getBoundingBox());
-                                stationIndex++;
-                            } else {
-                                GetExtentsFromSubFeatures(feature, stationIndex);
-                            }
-                        }
-                    } catch (Exception ex) {
-                        _log.error(ex.getMessage(), ex);
-                    }
-                    break;
-                case STATION:
-                    try {
-                        StationTimeSeriesFeatureCollection collection = (StationTimeSeriesFeatureCollection) getFeatureTypeDataSet();
-                        collection.resetIteration();
-                        while (collection.hasNext()) {
-                            StationTimeSeriesFeature feature = collection.next();
-                            if (DatasetHandlerAdapter.calcBounds(feature)) {
-                                if (start == null || start.isAfter(feature.getCalendarDateRange().getStart())) {
-                                    start = feature.getCalendarDateRange().getStart();
-                                }
-                                if (end == null || end.isBefore(feature.getCalendarDateRange().getEnd())) {
-                                    end = feature.getCalendarDateRange().getEnd();
-                                }
-                                this.stationDateRange.put(stationIndex, feature.getCalendarDateRange());
-                                this.stationBBox.put(stationIndex, feature.getBoundingBox());
-                            } else {
-                                GetExtentsFromSubFeatures(feature, stationIndex);
-                            }
-                            stationIndex++;
-                        }
-                    } catch (Exception ex) {
-                        _log.error(ex.getMessage(), ex);
-                    }
-                    break;
-                case PROFILE:
-                    try {
-                        ProfileFeatureCollection collection = (ProfileFeatureCollection) getFeatureTypeDataSet();
-                        collection.resetIteration();
-                        while (collection.hasNext()) {
-                            ProfileFeature feature = collection.next();
-                            if (DatasetHandlerAdapter.calcBounds(feature)) {
-                                CalendarDate profileDate = CalendarDate.of(feature.getTime());
-                                if (start == null || start.isAfter(profileDate)) {
-                                    start = profileDate;
-                                }
-                                if (end == null || end.isBefore(profileDate)) {
-                                    end = profileDate;
-                                }
-                                this.stationDateRange.put(stationIndex, CalendarDateRange.of(profileDate, profileDate));
-                                this.stationBBox.put(stationIndex, new LatLonRect(feature.getLatLon(), feature.getLatLon()));
-                                stationIndex++;
-                            } else {
-                                GetExtentsFromSubFeatures(feature, stationIndex);
-                            }
-                        }
-                    } catch (Exception ex) {
-                        _log.error(ex.getMessage(), ex);
-                    }
-                    break;
-                case GRID:
-                    start = getGridDataset().getCalendarDateStart();
-                    end = getGridDataset().getCalendarDateEnd();
-                    this.stationDateRange.put(0, CalendarDateRange.of(start, end));
-                    break;
-                case STATION_PROFILE:
-                    try {
-                        CalendarDateRange nullrange = null;
-                        StationProfileFeatureCollection collection = (StationProfileFeatureCollection) getFeatureTypeDataSet();
-                        collection.resetIteration();
-                        while (collection.hasNext()) {
-                            StationProfileFeature feature = collection.next();
-                            PointFeatureCollection flattened = feature.flatten(null, nullrange);
-                            if (DatasetHandlerAdapter.calcBounds(flattened)) {
-                                if (start == null || start.isAfter(flattened.getCalendarDateRange().getStart())) {
-                                    start = flattened.getCalendarDateRange().getStart();
-                                }
-                                if (end == null || end.isBefore(flattened.getCalendarDateRange().getEnd())) {
-                                    end = flattened.getCalendarDateRange().getEnd();
-                                }
-                                this.stationDateRange.put(stationIndex, flattened.getCalendarDateRange());
-                                this.stationBBox.put(stationIndex, flattened.getBoundingBox());
-                                stationIndex++;
-                            } else {
-                                GetExtentsFromSubFeatures(flattened, stationIndex);
-                            }
-                        }
-                    } catch (Exception ex) {
-                        _log.error(ex.getMessage(), ex);
-                    }
-                    break;
-                case SECTION:
-                    try {
-                        CalendarDateRange nullrange = null;
-                        SectionFeatureCollection collection = (SectionFeatureCollection) getFeatureTypeDataSet();
-                        collection.resetIteration();
-                        while (collection.hasNext()) {
-                            SectionFeature feature = collection.next();
-                            PointFeatureCollection flattened = feature.flatten(null, nullrange);
-                            if (DatasetHandlerAdapter.calcBounds(flattened)) {
-                                if (start == null || start.isAfter(flattened.getCalendarDateRange().getStart())) {
-                                    start = flattened.getCalendarDateRange().getStart();
-                                }
-                                if (end == null || end.isBefore(flattened.getCalendarDateRange().getEnd())) {
-                                    end = flattened.getCalendarDateRange().getEnd();
-                                }
-                                this.stationDateRange.put(stationIndex, flattened.getCalendarDateRange());
-                                this.stationBBox.put(stationIndex, flattened.getBoundingBox());
-                                stationIndex++;
-                            } else {
-                                GetExtentsFromSubFeatures(flattened, stationIndex);
-                            }
-                        }
-                    } catch (Exception ex) {
-                        _log.error(ex.getMessage(), ex);
-                    }
-                    break;
-                case POINT:
-                    _log.error("NcSOS does not support the Point featureType at this time.");
-                    formatter = new ErrorFormatter();
-                    ((ErrorFormatter)formatter).setException("NcSOS does not support the Point featureType at this time.");
-                    return;
-                default:
-                    _log.error("Unknown feature type - NetCDF-Java could not figure out what this dataset was!");
-                    formatter = new ErrorFormatter();
-                    ((ErrorFormatter)formatter).setException("Unknown feature type - NetCDF-Java could not figure out what this dataset was!");
-                    return;
-            }
-            this.setStartDate = start;
-            this.setEndDate = end;
-        } else {
-            _log.error("Unknown feature type - getDatasetFeatureType is null");
-        }
-    }
-
-    private void GetExtentsFromSubFeatures(PointFeatureCollection coll, int index) {
-        try {
-            // calculate the bounds of this particular station
-            CalendarDate start = CalendarDate.present();
-            CalendarDate end = CalendarDate.of(0);
-            double minLat = Double.POSITIVE_INFINITY, maxLat = Double.NEGATIVE_INFINITY, minLon = Double.POSITIVE_INFINITY, maxLon = Double.NEGATIVE_INFINITY;
-            for (coll.resetIteration(); coll.hasNext();) {
-                PointFeature pf = coll.next();
-                if (pf.getObservationTimeAsCalendarDate().isAfter(end)) {
-                    end = pf.getObservationTimeAsCalendarDate();
-                } else if (pf.getObservationTimeAsCalendarDate().isBefore(start)) {
-                    start = pf.getObservationTimeAsCalendarDate();
-                }
-
-                if (minLat > pf.getLocation().getLatitude()) {
-                    minLat = pf.getLocation().getLatitude();
-                } else if (maxLat < pf.getLocation().getLatitude()) {
-                    maxLat = pf.getLocation().getLatitude();
-                }
-
-                if (minLon > pf.getLocation().getLongitude()) {
-                    minLon = pf.getLocation().getLongitude();
-                } else if (maxLon < pf.getLocation().getLongitude()) {
-                    maxLon = pf.getLocation().getLongitude();
-                }
-            }
-            // add the values to the table
-            this.stationDateRange.put(index, CalendarDateRange.of(start, end));
-            this.stationBBox.put(index, new LatLonRect(new LatLonPointImpl(minLat, minLon), new LatLonPointImpl(maxLat, maxLon)));
-        } catch (Exception ex) {
-            // failed, um just add global bounds
-            _log.error("GetExtentsFromSubFeatures: Could not manually get extents, adding globals...\n\t" + ex.toString());
-            this.stationDateRange.put(index, CalendarDateRange.of(CalendarDate.of(0), CalendarDate.of(CalendarDate.present().getDifferenceInMsecs(CalendarDate.of(0)))));
-            this.stationBBox.put(index, new LatLonRect(new LatLonPointImpl(-90, -180), new LatLonPointImpl(90, 180)));
-        } catch (Error err) {
-            _log.error("GetExtentsFromSubFeatures: Could not manually get extents, adding globals...\n\t" + err.toString());
-            this.stationDateRange.put(index, CalendarDateRange.of(CalendarDate.of(0), CalendarDate.of(CalendarDate.present().getDifferenceInMsecs(CalendarDate.of(0)))));
-            this.stationBBox.put(index, new LatLonRect(new LatLonPointImpl(-90, -180), new LatLonPointImpl(90, 180)));
-        }
+            this.stationDateRange = dataset.getDateTimeRanges();
+            this.stationBBox = dataset.getLatLonRects();
+            
+            this.setStartDate = dataset.getStartDateTime();
+            this.setEndDate = dataset.getEndDateTime();
     }
 
     private void SetSectionBits() throws IOException {

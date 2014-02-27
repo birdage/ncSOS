@@ -4,22 +4,17 @@
  */
 package com.asascience.ncsos.outputformatter.gc;
 
+import java.util.HashMap;
+import java.util.List;
+
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.joda.time.Interval;
+
 import com.asascience.ncsos.gc.GetCapabilitiesRequestHandler;
 import com.asascience.ncsos.go.GetObservationRequestHandler;
 import com.asascience.ncsos.outputformatter.BaseOutputFormatter;
-import com.asascience.ncsos.service.BaseRequestHandler;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
-import ucar.nc2.constants.FeatureType;
-import ucar.nc2.time.CalendarDateRange;
-import ucar.unidata.geoloc.LatLonRect;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.List;
+import com.asascience.sos.dataproducts.LatLonRect;
 
 /**
  * @author kwilcox
@@ -178,7 +173,7 @@ public class GetCapsFormatter extends BaseOutputFormatter {
         return new Element("ObservationOffering", this.getNamespace("sos"));
     }
 
-    public void setObservationOfferingNetwork(LatLonRect datasetRect, String[] stations, List<String> sensors, CalendarDateRange dates, FeatureType ftype) {
+    public void setObservationOfferingNetwork(LatLonRect datasetRect, String[] stations, List<String> sensors, Interval dates) {
         Namespace gmlns = this.getNamespace("gml");
         Namespace sosns = this.getNamespace("sos");
         Namespace xlinkns = this.getNamespace("xlink");
@@ -211,14 +206,7 @@ public class GetCapsFormatter extends BaseOutputFormatter {
         }
         // ResponseFormat
         offering.addContent(new Element("responseFormat", sosns).setText(GetObservationRequestHandler.OOSTETHYS_RESPONSE_FORMAT));
-        switch (ftype) {
-            case STATION:
-            case STATION_PROFILE:
-                offering.addContent(new Element("responseFormat", sosns).setText(GetObservationRequestHandler.IOOS10_RESPONSE_FORMAT));
-                break;
-            default:
-                break;
-        }
+       
         // ResultModel
         offering.addContent(new Element("resultModel", sosns).setText("om:ObservationCollection"));
         // ResponseMode
@@ -228,7 +216,7 @@ public class GetCapsFormatter extends BaseOutputFormatter {
         ol.addContent(offering);
     }
 
-    public void setObservationOffering(String stationName, LatLonRect datasetRect, List<String> sensors, CalendarDateRange dates, FeatureType ftype) {
+    public void setObservationOffering(String stationName, LatLonRect datasetRect, List<String> sensors, Interval dates) {
         Namespace owsns = this.getNamespace("ows");
         Namespace gmlns = this.getNamespace("gml");
         Namespace sosns = this.getNamespace("sos");
@@ -259,14 +247,6 @@ public class GetCapsFormatter extends BaseOutputFormatter {
         offering.addContent(new Element("featureOfInterest", sosns).setAttribute("href", this.handler.getUrnName(stationName), xlinkns));
         // ResponseFormat
         offering.addContent(new Element("responseFormat", sosns).setText(GetObservationRequestHandler.OOSTETHYS_RESPONSE_FORMAT));
-        switch (ftype) {
-            case STATION:
-            case STATION_PROFILE:
-                offering.addContent(new Element("responseFormat", sosns).setText(GetObservationRequestHandler.IOOS10_RESPONSE_FORMAT));
-                break;
-            default:
-                break;
-        }
         // ResultModel
         offering.addContent(new Element("resultModel", sosns).setText("om:ObservationCollection"));
         // ResponseMode
@@ -302,8 +282,8 @@ public class GetCapsFormatter extends BaseOutputFormatter {
         String lc = null;
         String uc = null;
         try {
-            lc = rect.getLowerLeftPoint().getLatitude() + " " + rect.getLowerLeftPoint().getLongitude();
-            uc = rect.getUpperRightPoint().getLatitude() + " " + rect.getUpperRightPoint().getLongitude();
+            lc = rect.getLowerLeftPoint_lat() + " " + rect.getLowerLeftPoint_lon();
+            uc = rect.getUpperRightPoint_lat() + " " + rect.getUpperRightPoint_lon();
         } catch(Exception e) {
             lc = "UNKNOWN";
             uc = "UNKNOWN";
@@ -315,7 +295,7 @@ public class GetCapsFormatter extends BaseOutputFormatter {
         return bb;
     }
 
-    private Element getTimePeriod(CalendarDateRange dateRange) {
+    private Element getTimePeriod(Interval dateRange) {
         Namespace gmlns = this.getNamespace("gml");
         Namespace sosns = this.getNamespace("sos");
         Element tm = new Element("time", sosns);
