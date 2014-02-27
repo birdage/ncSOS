@@ -5,7 +5,7 @@ import org.jdom.Namespace;
 
 public class ErrorFormatter extends BaseOutputFormatter {
 
-    private final static String TEMPLATE = "templates/exception.xml";
+    private final static String TEMPLATE = "/Users/rpsdev/Documents/workspace/postSOS/resources/templates/exception.xml";
 
     public ErrorFormatter() {
         super();

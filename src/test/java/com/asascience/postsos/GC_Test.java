@@ -2,28 +2,100 @@ package com.asascience.postsos;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedWriter;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 
+import org.apache.log4j.BasicConfigurator;
+import org.jdom.Document;
+import org.jdom.Element;
 import org.junit.Test;
+
+import com.asascience.ncsos.NcSOSTest;
+import com.asascience.ncsos.outputformatter.OutputFormatter;
+import com.asascience.ncsos.service.Parser;
+import com.asascience.ncsos.util.XMLDomUtils;
+import com.asascience.sos.dataproducts.IDataProduct;
+import com.asascience.sos.dataproducts.PostgresDataReader;
+import com.asascience.sos.dataproducts.SampleDataReader;
 
 import java.net.URLEncoder;
 
 public class GC_Test {
 
-	private static HashMap<String,String> kvp = new HashMap<String, String>();
-	
-	
-	@Test
-	public void testGenerateSimpleRequest() throws UnsupportedEncodingException {
-		 kvp.put("responseFormat",   URLEncoder.encode("text/xml;subtype=\"om/1.0.0/profiles/ioos_sos/1.0\"", "UTF-8"));
-	        kvp.put("request",          "GetCapabilities");
-	        kvp.put("version",          "1.0.0");
-	        kvp.put("service",          "SOS");
-	        //kvp.put("procedure",        currentFile.getChild("platform").getAttributeValue("id"));
-	        kvp.put("offering",         "urn:ioos:network:ncsos:all");
-	        //kvp.put("observedProperty", currentFile.getChild("platform").getChild("sensor").getAttributeValue("standard"));
+	private static HashMap<String, String> kvp = new HashMap<String, String>();
+
+	protected static String baseOutputDir = null;
+	protected static String baseExampleDir = null;
+	protected static List<Element> fileElements;
+
+	public static void setUpClass() throws Exception {
+
+		BasicConfigurator.resetConfiguration();
+		BasicConfigurator.configure();
+
+		try {
+			File configFile = new File("resources/tests_config.xml");
+			InputStream templateInputStream = new FileInputStream(configFile);
+			Document configDoc = XMLDomUtils
+					.getTemplateDom(templateInputStream);
+			// read from the config file
+			baseOutputDir = configDoc.getRootElement()
+					.getChild("outputDirectory").getValue();
+			baseExampleDir = configDoc.getRootElement()
+					.getChild("examplesDirectory").getValue();
+
+			Element testFilesElement = XMLDomUtils.getNestedChild(
+					configDoc.getRootElement(), "TestFiles");
+			fileElements = testFilesElement.getChildren();
+
+			templateInputStream.close();
+		} catch (Exception e) {
+			System.out.println(e.getLocalizedMessage());
+		}
 	}
+
+	@Test
+	public void testGenerateSimpleRequest() throws IOException {
+
+		kvp.put("request", "GetCapabilities");
+		kvp.put("version", "1.0.0");
+		kvp.put("service", "SOS");
+
+		String tempdir = System.getProperty("java.io.tmpdir");
+
+		Parser md = new Parser();
+		IDataProduct dataset = new SampleDataReader();
+
+		String request = "request=getCapabilities&service=sos&version=1.0.0";
+
+		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
+				request, "eoi-dev1.oceanobservatories.org" + "?".toString(),
+				tempdir);
+		
+		OutputFormatter output = (OutputFormatter) respMap.get("outputFormatter");
+		Writer writer = new CharArrayWriter();
+		output.writeOutput(writer);
+		 // Write to disk
+        System.out.println("------ Saving output: " + output +" ------");
+        fileWriter("/Users/rpsdev/Documents/workspace/postSOS/examples/post_Get_caps.xml", writer,false);
+		int a =1;
+	}
+	
+	public static void fileWriter(String filePath, Writer writer, boolean append) throws IOException {
+        File file = new File(filePath);
+        Writer output = new BufferedWriter(new FileWriter(file, append));
+        output.write(writer.toString());
+        output.close();
+    }
 
 }

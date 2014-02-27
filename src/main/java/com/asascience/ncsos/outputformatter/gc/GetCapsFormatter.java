@@ -28,7 +28,7 @@ public class GetCapsFormatter extends BaseOutputFormatter {
     public static final String SERVICE_IDENTIFICATION = "ServiceIdentification";
     public static final String SERVICE_PROVIDER = "ServiceProvider";
     private boolean exceptionFlag = false;
-    private final static String TEMPLATE = "templates/GC.xml";
+    private final static String TEMPLATE = "/Users/rpsdev/Documents/workspace/postSOS/resources/templates/GC.xml";
     private GetCapabilitiesRequestHandler handler = null;
 
     public GetCapsFormatter(GetCapabilitiesRequestHandler handler) {

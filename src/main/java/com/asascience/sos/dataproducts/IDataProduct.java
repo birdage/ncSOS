@@ -8,6 +8,7 @@ package com.asascience.sos.dataproducts;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -101,6 +102,8 @@ public interface IDataProduct {
 	public ArrayList<String> getCoordinateNames();
 	
 	public HashMap<String, Object> getGlobalAttributes();
+
+	public List<String> getSensorNames();
 	
 	
 }

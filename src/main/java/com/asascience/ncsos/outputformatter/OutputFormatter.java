@@ -1,14 +1,16 @@
 package com.asascience.ncsos.outputformatter;
 
-import com.asascience.ncsos.util.XMLDomUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.List;
+
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.List;
+import com.asascience.ncsos.util.XMLDomUtils;
 
 /**
  * Provides common functions for classes that define the response outputs for various
@@ -18,7 +20,7 @@ import java.util.List;
 public abstract class OutputFormatter {
 
     private HashMap<String, Namespace> namespaces;
-    public static final String NCSOS_VERSION = "RC9";
+    public static final String NCSOS_VERSION = "RC8";
     public static final String OBSERVATION = "Observation";
     public static final String OBSERVATION_COLLECTION = "ObservationCollection";
     public static final String MEMBER = "member";
@@ -100,9 +102,10 @@ public abstract class OutputFormatter {
     public static final String VALUES = "values";
     protected Document  document;
 
-    public OutputFormatter() {
-        this.document = XMLDomUtils.loadFile(getClass().getClassLoader().getResourceAsStream(this.getTemplateLocation()));
-        this.initNamespaces();
+    public OutputFormatter() {    	
+        //this.document = XMLDomUtils.loadFile(getClass().getClassLoader().getResourceAsStream(this.getTemplateLocation()));
+    	this.document = XMLDomUtils.loadFile(this.getTemplateLocation());
+    	this.initNamespaces();
     }
 
      public Element getRoot() {

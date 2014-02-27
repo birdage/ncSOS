@@ -134,7 +134,7 @@ public abstract class BaseRequestHandler {
 	 * of their names.
 	 */
 	private void parseSensorNames() {
-
+		this.sensorNames = dataset.getSensorNames();
 	}
 
 	private void getPlatformNames() {
