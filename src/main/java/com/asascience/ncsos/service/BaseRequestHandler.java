@@ -138,7 +138,7 @@ public abstract class BaseRequestHandler {
 	}
 
 	private void getPlatformNames() {
-		stationNames = dataset.getStationNames();
+		this.stationNames = dataset.getStationNames();
 	}
 
 	/**

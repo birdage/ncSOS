@@ -104,6 +104,12 @@ public interface IDataProduct {
 	public HashMap<String, Object> getGlobalAttributes();
 
 	public List<String> getSensorNames();
+
+	public void setOfferings(Object object);
+
+	public void setObservedProperty(Object object);
+
+	public void setup();
 	
 	
 }

@@ -9,6 +9,8 @@ import org.joda.time.Interval;
 
 public class SampleDataReader implements IDataProduct {
 
+	// GETCAPS--------------------------------------------------------------------
+	
 	public String[] getOfferingList() {
 		String[] data = { "offer1" };
 		return data;
@@ -82,7 +84,7 @@ public class SampleDataReader implements IDataProduct {
 	}
 
 	public String[] getSensorNames(String offering) {
-		String[] vars = { "temp_sen", "density_sen", "salinity_sen",
+		String[] vars = { "temp", "density", "salinity",
 				"temp_L1_sen" };
 		return vars;
 	}
@@ -116,7 +118,7 @@ public class SampleDataReader implements IDataProduct {
 
 	public HashMap<Integer, String> getStationNames() {
 		HashMap<Integer, String> test = new HashMap<Integer, String>();
-		test.put(1, "offer");
+		test.put(1, "offer1");
 		return test;
 	}
 
@@ -148,6 +150,8 @@ public class SampleDataReader implements IDataProduct {
 		test.put("title", "ooi title");
 		test.put("summary", "test sample sample");
 		test.put("access_constraints", "test contraints");
+		test.put("publisher_name", "ooi");
+		test.put("publisher_email","ooi");
 		test.put("keywords", "");
 		return test;
 	}
@@ -161,4 +165,20 @@ public class SampleDataReader implements IDataProduct {
 		return vars;
 	}
 
+	public void setOfferings(Object object) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setObservedProperty(Object object) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setup() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	//--------------------------------------------------------------------
 }

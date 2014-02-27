@@ -66,17 +66,47 @@ public class GC_Test {
 
 	@Test
 	public void testGenerateSimpleRequest() throws IOException {
-
-		kvp.put("request", "GetCapabilities");
-		kvp.put("version", "1.0.0");
-		kvp.put("service", "SOS");
-
+		fail();
 		String tempdir = System.getProperty("java.io.tmpdir");
 
 		Parser md = new Parser();
 		IDataProduct dataset = new SampleDataReader();
 
-		String request = "request=getCapabilities&service=sos&version=1.0.0";
+		String request = "request=getCapabilities&service=sos&version=1.0.0&offering=offer1";
+
+		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
+				request, "eoi-dev1.oceanobservatories.org" + "?".toString(),
+				tempdir);
+		
+		OutputFormatter output = (OutputFormatter) respMap.get("outputFormatter");
+		Writer writer = new CharArrayWriter();
+		output.writeOutput(writer);
+		 // Write to disk
+        System.out.println("------ Saving output: " + output +" ------");
+        fileWriter("/Users/rpsdev/Documents/workspace/postSOS/examples/post_Get_caps.xml", writer,false);
+		
+	}
+	
+	public static void fileWriter(String filePath, Writer writer, boolean append) throws IOException {
+        File file = new File(filePath);
+        Writer output = new BufferedWriter(new FileWriter(file, append));
+        output.write(writer.toString());
+        output.close();
+    }
+	
+	@Test
+	public void test_setupJDBCDAtaProduct() {
+		IDataProduct dataset = new PostgresDataReader();
+		dataset.setup();
+	}	
+	
+	@Test
+	public void test_postgresExample() throws Exception {
+		String tempdir = System.getProperty("java.io.tmpdir");
+
+		Parser md = new Parser();
+		IDataProduct dataset = new PostgresDataReader();
+		String request = "request=getCapabilities&service=sos&version=1.0.0&offering=64b12a0744fb49a48e48bd8c8434c70c";
 
 		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
 				request, "eoi-dev1.oceanobservatories.org" + "?".toString(),
@@ -90,12 +120,5 @@ public class GC_Test {
         fileWriter("/Users/rpsdev/Documents/workspace/postSOS/examples/post_Get_caps.xml", writer,false);
 		int a =1;
 	}
-	
-	public static void fileWriter(String filePath, Writer writer, boolean append) throws IOException {
-        File file = new File(filePath);
-        Writer output = new BufferedWriter(new FileWriter(file, append));
-        output.write(writer.toString());
-        output.close();
-    }
 
 }

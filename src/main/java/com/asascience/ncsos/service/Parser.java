@@ -137,7 +137,12 @@ public class Parser {
 
 		try {
 			String request = queryParameters.get(REQUEST).toString();
-
+			
+			dataset.setOfferings(queryParameters.get(OFFERING));
+			dataset.setObservedProperty(queryParameters.get(OBSERVED_PROPERTY));
+			
+			dataset.setup();
+			
 			if (request.equalsIgnoreCase(GETCAPABILITIES)) {
 				GetCapabilitiesRequestHandler capHandler = null;
 				String sections = "all";
