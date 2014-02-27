@@ -13,36 +13,6 @@ import org.joda.time.Interval;
  */
 public class PostgresDataReader implements IDataProduct {
 
-	public String getReferencedFileLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String getFeatureDatasetType() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public boolean closeFile() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public String findFeatureType() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String findCoordinateAxis(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String[] getVariables() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public String[] getOfferingList() {
 		// TODO Auto-generated method stub
 		return null;
@@ -69,6 +39,11 @@ public class PostgresDataReader implements IDataProduct {
 	}
 
 	public String findFeatureType(String offering) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String findCoordinateAxis(String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -173,9 +148,5 @@ public class PostgresDataReader implements IDataProduct {
 		return null;
 	}
 
-	public FeatureType getFeatureType() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 }

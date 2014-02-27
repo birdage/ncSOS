@@ -12,9 +12,6 @@ import java.util.HashMap;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
-import com.asascience.ncsos.gc.LatLonRect;
-import com.asascience.ncsos.outputformatter.gc.FeatureType;
-
 public interface IDataProduct {
 
 	public String[] getOfferingList();
