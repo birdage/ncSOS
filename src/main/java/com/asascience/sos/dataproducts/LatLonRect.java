@@ -1,5 +1,10 @@
 package com.asascience.sos.dataproducts;
 
+/**
+ * class provides lat lon support for stations/bounding boxes
+ * @author abird
+ *
+ */
 public class LatLonRect {
 
 	double latMin;
@@ -7,8 +12,14 @@ public class LatLonRect {
 	double lonMin;
 	double lonMax;
 	
-	public LatLonRect(double latMin2, double lonMin2, double latMax2,
-			double lonMax2) {
+	/**
+	 * generates a bounding box for lat/lon
+	 * @param latMin
+	 * @param lonMin
+	 * @param latMax
+	 * @param lonMax
+	 */
+	public LatLonRect(double latMin, double lonMin, double latMax, double lonMax) {
 		setLatMax(latMax);
 		setLonMax(lonMax);
 		setLatMin(latMin);

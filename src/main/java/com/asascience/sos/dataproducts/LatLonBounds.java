@@ -2,15 +2,16 @@ package com.asascience.sos.dataproducts;
 
 public class LatLonBounds {
 
-	double botLeft_lat;
-	double botLeft_lon;
-	double botRight_lat;
-	double botRight_lon;
+	double botLeft_lat = Double.NaN;
+	double botLeft_lon = Double.NaN;
+	double botRight_lat = Double.NaN;
+	double botRight_lon = Double.NaN;
 	
-	double topLeft_lat;
-	double topLeft_lon;
-	double topRight_lat;
-	double topRight_lon;
+	double topLeft_lat = Double.NaN;
+	double topLeft_lon = Double.NaN;
+	double topRight_lat = Double.NaN;
+	double topRight_lon = Double.NaN;
+	
 	public double getBotLeft_lat() {
 		return botLeft_lat;
 	}

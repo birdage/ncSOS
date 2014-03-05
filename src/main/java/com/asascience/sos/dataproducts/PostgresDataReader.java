@@ -1,5 +1,7 @@
 package com.asascience.sos.dataproducts;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -9,14 +11,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * 
  * @author abird
  * 
  */
+@SuppressWarnings("unused")
 public class PostgresDataReader implements IDataProduct {
 
 	private static final String DBNAME = "postgres";
@@ -24,18 +37,50 @@ public class PostgresDataReader implements IDataProduct {
 	private static final String DBPASS = "";
 	private static final String DBSERVER = "localhost";
 	private static final String DBPORT = "5432";
-
+	private static final String TITLE = "-------- PostgreSQL JDBC Connection Testing ------------";
+	private static final String CONNECTION_PASSED = "Connection working...";
+	
+	private static final String LAT_FIELD = "lat";
+	private static final String LON_FIELD = "lon";
+	private static final String OOI_PREFIX = "_";
+	private static final String OOI_SUFFIX = "_view";
+	
+	private static final String SessionStartup = "select runCovTest()";
+	
+	
+	
 	Connection connection = null;
 	Statement st = null;
 	ResultSet rs = null;
-
 	String[] requestedObservedProperty = null;
 	String[] requestedOfferings = null;
-	
+	//available offering list
 	ArrayList<String> requestedOfferingList = new ArrayList<String>();
 
+	HashMap<Integer, LatLonRect> latLonRects = null;
+	LatLonBounds totalLatLonBounds = new LatLonBounds();
+	private boolean RR_temporal_bounds = false;
+	private boolean RR_geo_bounds = false;
+	
+	//used to hold the variables per offering/station
+	public HashMap<String, String[]> stationParameterList = new HashMap<String, String[]>();
+	//ignore certain things...
+	private ArrayList<String> ignoreParamList = new ArrayList<String>(){{
+		add("geom");
+	}};
+	//hashmap for the units of a given offering/station
+	//is basically a mapping Station->Hash of param then unit
+	//Station:Param:unit
+	public HashMap<String, HashMap<String, String>> unitList = new HashMap<String, HashMap<String,String>>();
+	
+	
+	private final String USER_AGENT = "Mozilla/5.0";
+	private static final String server = "http://localhost:5000"; 
+	
+	
+	
 	public PostgresDataReader() {
-		// setup new connection
+		// setup new connection to DB
 		setupConnection();
 	}
 
@@ -43,32 +88,261 @@ public class PostgresDataReader implements IDataProduct {
 		// check that the data is setup
 		try {
 			st = connection.createStatement();
+			//checks that the connection is valid
 			rs = makeSqlRequest("select Version()");
 			printResultsSet(rs);
 
+			rs = makeSqlRequest(SessionStartup);
+			printResultsSet(rs);
+			
 			//station information
 			if (requestedOfferings != null) {
 				for (int i = 0; i < requestedOfferings.length; i++) {
-					rs = makeSqlRequest(doesTableExist(requestedOfferings[i]));
-					//is it available
+					rs = makeSqlRequest(doesTableExist_CMD(requestedOfferings[i]));
+					//is an offering available 
 					if (getBooleanValResultsSet(rs)){
+						//add the offering to the list
 						requestedOfferingList.add(requestedOfferings[i]);
+						//add the station parameteres to a list, make sure to put it just as the resource name
+						stationParameterList.put(requestedOfferings[i].substring(1, requestedOfferings[i].length()-5), getVariables(requestedOfferings[i]));
+						//get meta dota about a resource from the RR, make sure to use just the resource name
+						queryResourceRegistry(requestedOfferings[i].substring(1, requestedOfferings[i].length()-5));
+						
 					}
 				}
+				if (!RR_geo_bounds){
+					parseLatLonRects();
+				}
+				
+				if(!RR_temporal_bounds){
+					parseTemporalBounds();
+				}
 			}
-
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
+	
+	
+	
 
-	private String doesTableExist(String dataset_id) {
+	private void parseTemporalBounds() {
+		
+		
+	}
+
+	/**
+	 * read parameter information from the resource registry
+	 * @param offering minus the prefix and suffix
+	 * @throws Exception
+	 */
+	@SuppressWarnings("deprecation")
+	public void queryResourceRegistry(String offering) throws Exception {
+		 
+		String url = server+"/ion-service/resource_registry/read";
+		
+		CloseableHttpClient client = new DefaultHttpClient();
+		HttpPost post = new HttpPost(url);
+ 
+		// add header
+		post.setHeader("User-Agent", USER_AGENT);
+ 
+		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+		String data = "{\"serviceRequest\": {\"serviceName\": \"resource_registry\", \"params\": {\"object_id\": \""+offering+"\"}, \"serviceOp\": \"read\"}}";
+		urlParameters.add(new BasicNameValuePair("payload", data));
+		post.setEntity(new UrlEncodedFormEntity(urlParameters));
+		HttpResponse response = client.execute(post);
+		int respCode = response.getStatusLine().getStatusCode();
+		System.out.println("Response Code : " + respCode);
+
+		// if post was successful
+		if (respCode == 200) {
+
+			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+
+			StringBuffer result = new StringBuffer();
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				result.append(line);
+			}
+
+			System.out.println(result.toString());
+			
+			// parse the json response and get the data/gatewayresponse
+			JSONObject obj = ((new JSONObject(result.toString())).getJSONObject("data")).getJSONObject("GatewayResponse");
+			String stationStatek = obj.getString("lcstate");
+			//get param dict
+			JSONObject l = obj.getJSONObject("parameter_dictionary");
+			//number of variables
+			int val = l.getInt("_ParameterDictionary__count");
+			
+			//loop through the parameters and get the units
+			HashMap<String, String> unitHash = new HashMap<String, String>();
+			for (int i = 0; i < stationParameterList.get(offering).length; i++) {
+				String param = stationParameterList.get(offering)[i];
+				if (!ignoreParamList.contains(param)){
+					try {
+						JSONArray paramObject = l.getJSONArray(param);
+						JSONObject actualParamObject = (JSONObject) paramObject.get(1);
+						String paramUnits = actualParamObject.getString("uom");
+						unitHash.put(param, paramUnits);
+						//JSONObject d =actualParamObject.getJSONObject("param_type");
+					} catch (Exception e) {
+						unitHash.put(param, "unknown");
+					}
+										
+				}
+			}
+			//finally add the units to the  main hash
+			unitList.put(offering,unitHash);
+			
+			//try and grab the temporal and spatial bounds
+			try {
+				//try and get temporal
+				JSONObject d = obj.getJSONObject("nominal_datetime");
+				RR_temporal_bounds = true;
+				//try and get geo bounds
+				JSONObject g = obj.getJSONObject("geospatial_bounds");
+				RR_geo_bounds = true;
+			} catch (Exception e) {
+				//well there not avaiable....
+			}
+		}
+		post.releaseConnection();
+		client.close();
+	}
+	
+	private void parseLatLonRects(){
+		this.latLonRects = new HashMap<Integer, LatLonRect>();
+		
+		for (int i = 0; i < requestedOfferings.length; i++) {
+			if (isOfferingAvailable(requestedOfferings[i])){
+				getCalculatedRectangle(requestedOfferings[i],i);
+			}else{
+				getCalculatedRectangle(null,i);
+			}
+		}
+		
+	}
+	
+	private void getCalculatedRectangle(String requestedOffering,int id) {
+		if (requestedOffering!=null){
+			try {
+				// special kind of result set
+				rs = makeSqlRequest(getMinMaxLatLon_CMD(requestedOffering));
+				double[] latlons = new double[4];
+				int count = 0;
+				while (rs.next()) {
+					String val = (rs.getString(1));
+					latlons[count] = (Double.parseDouble(val));
+					count++;
+				}
+				
+				this.latLonRects.put(id, new LatLonRect(latlons[0], latlons[1], latlons[2], latlons[3]));
+				rs.close();
+							
+			} catch (SQLException e) {
+				this.latLonRects.put(id, new LatLonRect(Double.NaN, Double.NaN, Double.NaN, Double.NaN));
+				e.printStackTrace();
+			}catch (IndexOutOfBoundsException e) {
+				this.latLonRects.put(id, new LatLonRect(Double.NaN, Double.NaN, Double.NaN, Double.NaN));
+				e.printStackTrace();
+			}
+			
+		}else{
+			//generate mock/blank rect
+			this.latLonRects.put(id, new LatLonRect(Double.NaN, Double.NaN, Double.NaN, Double.NaN));
+		}
+		
+	}
+
+	private boolean isOfferingAvailable(String requested){
+		if (requestedOfferingList.contains(requested)){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * SQL String checks to see if table exists
+	 * @param dataset_id
+	 * @return
+	 */
+	public String doesTableExist_CMD(String dataset_id) {
 		String sqlcmd = "SELECT 1 FROM pg_catalog.pg_class WHERE relname = \'" + dataset_id + "\';";
 		return sqlcmd;
 	}
-
+	
+	/**
+	 * SQL String gets the table fields available
+	 * @param dataset_id
+	 * @return
+	 */
+	public String getTableFields_CMD(String dataset_id){
+		String sqlcmd = "select column_name from information_schema.columns where table_name = \'" + dataset_id + "\';";
+		return sqlcmd;
+	}
+	
+	/**
+	 * SQL String get the min and max lat lon boundaries
+	 * @param query
+	 * @return
+	 * @throws SQLException
+	 */
+	public String getMinMaxLatLon_CMD(String dataset_id){
+		String sqlcmd ="select min("+LAT_FIELD+"),min("+LON_FIELD+"),max("+LAT_FIELD+"),max("+LON_FIELD+") from \"" + dataset_id + "\";";
+		return sqlcmd;
+	}
+	
+	/**
+	 * SQL String get the lats from an offering
+	 * @param dataset_id
+	 * @return
+	 */
+	public String getLatField_CMD(String dataset_id){
+		return getDataField_CMD(dataset_id, LAT_FIELD);
+	}
+	
+	/**
+	 * SQL String get the lons from an offering
+	 * @param dataset_id
+	 * @return
+	 */
+	public String getLonField_CMD(String dataset_id){
+		return getDataField_CMD(dataset_id, LON_FIELD);
+	}
+	
+	/**
+	 * SQL String, uses the {@link PostgresDataReader#OOI_PREFIX} 
+	 * @return 
+	 */
+	@Deprecated //not needed yet
+	public String getAllFDT_CMD(){
+		String sqlcmd = "SELECT relname FROM pg_catalog.pg_class where relkind =\'foreign table\';";
+		return sqlcmd;
+	}
+	
+	/**
+	 * SQL String uses the {@link PostgresDataReader#OOI_SUFFIX} to get the views
+	 * @return
+	 */
+	public String getAllFDTViews_CMD() {
+		String sqlcmd = "SELECT viewname FROM pg_catalog.pg_views where schemaname='public' and viewname like \'%"+OOI_SUFFIX+"\';";
+		return sqlcmd;
+	}
+	
+	/**
+	 * util builder for queries from a field(s)
+	 */
+	private String getDataField_CMD(String dataset_id,String datafield){
+		String sqlcmd ="select "+datafield+" from \"" + dataset_id + "\";";
+		return sqlcmd;
+	}
+	
+	
 	public ResultSet makeSqlRequest(String query) throws SQLException {
 		st = connection.createStatement();
 		rs = st.executeQuery(query);
@@ -82,32 +356,80 @@ public class PostgresDataReader implements IDataProduct {
 		rs.close();
 	}
 
+	private boolean convertToBoolean(String value) {
+	    boolean returnValue = false;
+	    if ("1".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value) || 
+	        "true".equalsIgnoreCase(value) || "on".equalsIgnoreCase(value))
+	        returnValue = true;
+	    return returnValue;
+	}
+	
+	public double[] getDoubleArray(ResultSet rs) {
+		ArrayList<Double> dblList = new ArrayList<Double>();
+		
+		try {
+			while (rs.next()) {
+				String val = (rs.getString(1));
+				dblList.add(Double.parseDouble(val));
+			}
+			rs.close();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		double dblArray[] = new double[dblList.size()];
+		for(int i = 0; i < dblArray.length; i++){
+		     dblArray[i] = dblList.get(i);
+		}
+		
+		return dblArray;
+	}
+	
+	public String[] getStringArray(ResultSet rs) {
+		String[] ret = null;
+		try {
+			ArrayList<String> list = new ArrayList<String>();
+			while (rs.next()) {
+				String val = (rs.getString(1));
+				list.add(val);
+			}
+			rs.close();
+			
+			ret = list.toArray(new String[list.size()]);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ret;
+	}
+
+	
 	public boolean getBooleanValResultsSet(ResultSet rs) throws SQLException {
 		boolean ret = false;
 		while (rs.next()) {
-			ret = Boolean.parseBoolean(rs.getString(1));
-			
+			String val = (rs.getString(1));
+			ret = convertToBoolean(val);
 		}
 		rs.close();
 		return ret;
 	}
 
 	public void setupConnection() {
-		System.out
-				.println("-------- PostgreSQL JDBC Connection Testing ------------");
+		System.out.println(TITLE);
 
 		try {
 
 			Class.forName("org.postgresql.Driver");
 
 		} catch (ClassNotFoundException e) {
-
-			System.out.println("Where is your PostgreSQL JDBC Driver? "
-					+ "Include in your library path!");
+			System.out.println("Where is your PostgreSQL JDBC Driver? "+ "Include in your library path!");
 			e.printStackTrace();
 			return;
-
 		}
+		
 		System.out.println("PostgreSQL JDBC Driver Registered!");
 		connection = null;
 
@@ -126,12 +448,15 @@ public class PostgresDataReader implements IDataProduct {
 		}
 
 		if (connection != null) {
-			System.out.println("You made it, take control your database now!");
+			System.out.println(CONNECTION_PASSED);
 		} else {
 			System.out.println("Failed to make connection!");
 		}
 	}
 
+	/**
+	 * set the requested offerings (stations)
+	 */
 	public void setOfferings(Object object) {
 		if (object instanceof String[]) {
 			this.requestedOfferings = (String[]) object;
@@ -142,6 +467,9 @@ public class PostgresDataReader implements IDataProduct {
 
 	}
 
+	/**
+	 * set the properties requested i.e temperature
+	 */
 	public void setObservedProperty(Object object) {
 		if (object instanceof String[]) {
 			this.requestedObservedProperty = (String[]) object;
@@ -170,8 +498,12 @@ public class PostgresDataReader implements IDataProduct {
 		return false;
 	}
 
+	/**
+	 * close all the stuff down
+	 */
 	public boolean closeFile(String offering) {
 		try {
+			rs.close();
 			st.close();
 			connection.close();
 			return true;
@@ -202,29 +534,39 @@ public class PostgresDataReader implements IDataProduct {
 		return null;
 	}
 
+	/**
+	 * should be the lat lon bounds for all the requests
+	 */
 	public LatLonBounds getLatLonBounds() {
-		// TODO Auto-generated method stub
-		return null;
+		return totalLatLonBounds;
 	}
 
 	public HashMap<Integer, LatLonRect> getLatLonRects() {
-		// TODO Auto-generated method stub
-		return null;
+		return latLonRects;
 	}
 
 	public String[] getVariables(String offering) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return getStringArray(makeSqlRequest(getTableFields_CMD(offering)));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new String[]{};
 	}
 
 	public String getUnitsOfVariable(String offering, String variable) {
-		// TODO Auto-generated method stub
-		return null;
+		return unitList.get(offering).get(variable);
 	}
 
 	public String[] getSensorNames(String offering) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return getStringArray(makeSqlRequest(getTableFields_CMD(offering)));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new String[]{};
 	}
 
 	public List<String> getSensorNames() {
@@ -263,7 +605,6 @@ public class PostgresDataReader implements IDataProduct {
 	}
 
 	public HashMap<Integer, String> getStationNames() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -297,4 +638,5 @@ public class PostgresDataReader implements IDataProduct {
 		return null;
 	}
 
+	
 }
