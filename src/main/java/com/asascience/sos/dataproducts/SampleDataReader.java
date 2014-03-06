@@ -180,5 +180,35 @@ public class SampleDataReader implements IDataProduct {
 		
 	}
 
+	public boolean isVariableAvailable(String offering, String variableRequested) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public String getDatasetFeatureType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Object getFeatureTypeDataSet() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getVariableStandardName(String variable) {
+		// TODO Auto-generated method stub
+		return "";
+	}
+
+	public String getFillValue(String obsProp) {
+		// TODO Auto-generated method stub
+		return "";
+	}
+
+	public boolean hasFillValue(String obsProp) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	//--------------------------------------------------------------------
 }

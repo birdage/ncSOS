@@ -3,7 +3,6 @@ package com.asascience.ncsos.gc;
 import com.asascience.ncsos.outputformatter.ErrorFormatter;
 import com.asascience.ncsos.outputformatter.gc.GetCapsFormatter;
 import com.asascience.ncsos.service.BaseRequestHandler;
-import com.asascience.ncsos.util.DatasetHandlerAdapter;
 import com.asascience.sos.dataproducts.IDataProduct;
 import com.asascience.sos.dataproducts.LatLonRect;
 

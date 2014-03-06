@@ -1,7 +1,6 @@
 package com.asascience.ncsos.service;
 
 import com.asascience.ncsos.outputformatter.OutputFormatter;
-import com.asascience.ncsos.util.DiscreteSamplingGeometryUtil;
 import com.asascience.ncsos.util.ListComprehension;
 import com.asascience.sos.dataproducts.IDataProduct;
 
@@ -19,9 +18,9 @@ public abstract class BaseRequestHandler {
 	public static final String PROFILE_ID = "profile_id";
 	public static final String TRAJECTORY_ID = "trajectory_id";
 
-	public static final String STATION_URN_BASE = "urn:ioos:station:";
-	public static final String SENSOR_URN_BASE = "urn:ioos:sensor:";
-	public static final String NETWORK_URN_BASE = "urn:ioos:network:";
+	public static final String STATION_URN_BASE = "urn:ooi:station:";
+	public static final String SENSOR_URN_BASE = "urn:ooi:sensor:";
+	public static final String NETWORK_URN_BASE = "urn:ooi:network:";
 	public static final String DEFAULT_NAMING_AUTHORITY = "ncsos";
 	private static final NumberFormat FORMAT_DEGREE;
 	// list of keywords to filter variables on to remove non-data variables from

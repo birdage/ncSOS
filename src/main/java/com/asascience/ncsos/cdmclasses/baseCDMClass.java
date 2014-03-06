@@ -6,12 +6,13 @@ package com.asascience.ncsos.cdmclasses;
 
 import org.joda.time.Chronology;
 import org.joda.time.chrono.ISOChronology;
-import ucar.nc2.units.DateFormatter;
-import ucar.nc2.units.DateUnit;
-import ucar.unidata.geoloc.Station;
+
+import com.asascience.sos.dataproducts.Station;
 
 import java.util.Date;
 import java.util.List;
+
+import javax.swing.text.DateFormatter;
 
 /**
  * @author abird
@@ -33,8 +34,6 @@ public abstract class baseCDMClass implements iStationData {
     
     protected static org.slf4j.Logger _log = org.slf4j.LoggerFactory.getLogger(baseCDMClass.class);
     
-    
-    @Override
     public void checkLatLonAltBoundaries(List<Station> stationList, int i) {
         //LAT?LON PARSING
         //lat
@@ -45,11 +44,11 @@ public abstract class baseCDMClass implements iStationData {
             lowerLat = stationList.get(i).getLatitude();
         }
         //lon
-        if (stationList.get(i).getLongitude() > upperLon) {
-            upperLon = stationList.get(i).getLongitude();
+        if (stationList.get(i).getLatitude() > upperLon) {
+            upperLon = stationList.get(i).getLatitude();
         }
-        if (stationList.get(i).getLongitude() < lowerLon) {
-            lowerLon = stationList.get(i).getLongitude();
+        if (stationList.get(i).getLatitude() < lowerLon) {
+            lowerLon = stationList.get(i).getLatitude();
         }
         // alt
         if (stationList.get(i).getAltitude() > upperAlt) {
@@ -60,90 +59,90 @@ public abstract class baseCDMClass implements iStationData {
         }
     }
 
+    /*
     protected Date getDateForTime(double timeVal, DateUnit dateUnit){
     	if (Double.isNaN(timeVal)) return null;
     	double secs = dateUnit.getTimeUnit().getValueInSeconds(timeVal); //
     	return new Date(Math.round( ((double) dateUnit.getDateOrigin().getTime()+ (1000.0*secs))));
     }
+    */
     
     
-    @Override
+   
     public List<String> getStationNames() {
         return reqStationNames;
     }
 
-    @Override
+  
     public double getBoundUpperLon() {
         return upperLon;
     }
 
-    @Override
+   
     public double getBoundUpperLat() {
         return upperLat;
     }
 
-    @Override
+   
     public double getBoundLowerLon() {
         return lowerLon;
     }
 
-    @Override
+   
     public double getBoundLowerLat() {
         return lowerLat;
     }
 
-    @Override
+  
     public String getBoundTimeBegin() {
         return startDate;
     }
 
-    @Override
+   
     public String getBoundTimeEnd() {
         return endDate;
     }
 
-    @Override
+  
     public void setStartDate(String startDateStr) {
         this.startDate = startDateStr;
     }
 
-    @Override
+   
     public void setEndDate(String endDateStr) {
         this.endDate = endDateStr;
     }
 
-    @Override
+    
     public void setNumberOfStations(int numOfStations) {
         this.numberOfStations = numOfStations;
     }
 
-    @Override
+    
     public int getNumberOfStations() {
         return numberOfStations;
     }
     
-    @Override
     public boolean isStationInFinalList(int stNum) {
         return true;
     }
-    
-    @Override
+
     public double getLowerAltitude(int stNum) {
         return 0;
     }
-    @Override
+    
     public double getUpperAltitude(int stNum) {
         return 0;
     }
     
-    @Override
+    
     public double getBoundLowerAlt() {
         if (Double.toString(lowerAlt).contains("fin") || Double.toString(lowerAlt).equalsIgnoreCase("nan"))
             return 0;
         return lowerAlt;
     }
     
-    @Override
+    
     public double getBoundUpperAlt() {
         if (Double.toString(lowerAlt).contains("fin") || Double.toString(upperAlt).equalsIgnoreCase("nan"))
             return 0;

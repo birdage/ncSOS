@@ -66,32 +66,22 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
             formatter = new OosTethysFormatter(this);
         } else if (responseFormat.equalsIgnoreCase(IOOS10_RESPONSE_FORMAT)) {
             formatter = new Ioos10Formatter(this);
-        } else {
+        }else if (responseFormat.equalsIgnoreCase("text/xml")) {
+        	 formatter = new OosTethysFormatter(this);
+        }
+        else {
             formatter = new ErrorFormatter();
             ((ErrorFormatter)formatter).setException("Could not recognize response format: " + responseFormat, INVALID_PARAMETER, "responseFormat");
         }
 
         // Since the obsevedProperties can be standard_name attributes, map everything to an actual variable name here.
-
         String[] actualVariableNames = variableNames.clone();
 
         // make sure that all of the requested variable names are in the dataset
         for (int i = 0 ; i < variableNames.length ; i++) {
             String vars = variableNames[i];
             boolean isInDataset = false;
-            for (Variable dVar : dataset.getVariables()) {
-                if (dVar.getFullName().equalsIgnoreCase(vars)) {
-                    isInDataset = true;
-                    break;
-                } else {
-                    Attribute std = dVar.findAttributeIgnoreCase(CF.STANDARD_NAME);
-                    if (std != null && std.getStringValue().equalsIgnoreCase(vars)) {
-                        isInDataset = true;
-                        // Replace standard_name with the variable name
-                        actualVariableNames[i] = dVar.getFullName();
-                    }
-                }
-            }
+            isInDataset = dataset.isVariableAvailable(offering, vars);
             if (!isInDataset) {
                 formatter = new ErrorFormatter();
                 ((ErrorFormatter)formatter).setException("observed property - " + vars + " - was not found in the dataset", INVALID_PARAMETER, "observedProperty");
@@ -100,9 +90,9 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
             }
         }
 
-        CoordinateAxis heightAxis = dataset.findCoordinateAxis("AxisType.Height");
+        //CoordinateAxis heightAxis = dataset.findCoordinateAxis("AxisType.Height");
 
-        this.obsProperties = checkNetcdfFileForAxis(heightAxis, actualVariableNames);
+        //this.obsProperties = checkNetcdfFileForAxis(heightAxis, actualVariableNames);
 
         // Figure out what procedures to use...
         try {
@@ -145,132 +135,33 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
             checkProceduresAgainstOffering(offering);
         }
 
-        setCDMDatasetForStations(netCDFDataset, eventTime, latLonRequest);
+        setCDMDatasetForStations(dataset, eventTime, latLonRequest);
     }
 
-    private void setCDMDatasetForStations(NetcdfDataset netCDFDataset, String[] eventTime, Map<String, String> latLonRequest) throws IOException {
+    private void setCDMDatasetForStations(IDataProduct dataset, String[] eventTime, Map<String, String> latLonRequest) throws IOException {
         // strip out text if the station is defined by indices
-        /*
-        if (isStationDefinedByIndices()) {
-            String[] editedStationNames = new String[requestedStationNames.length];
-            for (int i = 0; i < requestedStationNames.length; i++) {
-                if (requestedStationNames[i].contains(UNKNOWN)) {
-                    editedStationNames[i] = UNKNOWN;
-                } else {
-                    editedStationNames[i] = requestedStationNames[i].replaceAll("[A-Za-z]+", "");
-                }
-            }
-            // copy array
-            requestedStationNames = editedStationNames.clone();
-        }
-        */
         //grid operation
-        if (getDatasetFeatureType() == FeatureType.GRID) {
-
-            // Make sure latitude and longitude are specified
-            if (!latLonRequest.containsKey(LON)) {
+            if (dataset.getStationData()!=null){
+            	CDMDataSet = dataset.getStationData();
+            }else {
                 formatter = new ErrorFormatter();
-                ((ErrorFormatter)formatter).setException("No longitude point specified", MISSING_PARAMETER, "longitude");
+                ((ErrorFormatter)formatter).setException("NetCDF-Java could not recognize the dataset's FeatureType");
                 CDMDataSet = null;
                 return;
             }
-            if (!latLonRequest.containsKey(LAT)) {
-                formatter = new ErrorFormatter();
-                ((ErrorFormatter)formatter).setException("No latitude point specified", MISSING_PARAMETER, "latitude");
-                CDMDataSet = null;
-                return;
-            }
-
-            List<String> lats = Arrays.asList(latLonRequest.get(LAT).split(","));
-            for (String s : lats) {
-                try {
-                    Double.parseDouble(s);
-                } catch (NumberFormatException e) {
-                    formatter = new ErrorFormatter();
-                    ((ErrorFormatter)formatter).setException("Invalid latitude specified", INVALID_PARAMETER, "latitude");
-                    CDMDataSet = null;
-                    return;
-                }
-            }
-            List<String> lons = Arrays.asList(latLonRequest.get(LON).split(","));
-            for (String s : lons) {
-                try {
-                    Double.parseDouble(s);
-                } catch (NumberFormatException e) {
-                    formatter = new ErrorFormatter();
-                    ((ErrorFormatter)formatter).setException("Invalid longitude specified", INVALID_PARAMETER, "longitude");
-                    CDMDataSet = null;
-                    return;
-                }
-            }
-
-
-            Variable depthAxis;
-            if (!latLonRequest.isEmpty()) {
-                depthAxis = (netCDFDataset.findVariable(DEPTH));
-                if (depthAxis != null) {
-                    this.obsProperties = checkNetcdfFileForAxis((CoordinateAxis1D) depthAxis, this.obsProperties);
-                }
-                this.obsProperties = checkNetcdfFileForAxis(netCDFDataset.findCoordinateAxis(AxisType.Lat), this.obsProperties);
-                this.obsProperties = checkNetcdfFileForAxis(netCDFDataset.findCoordinateAxis(AxisType.Lon), this.obsProperties);
-
-                CDMDataSet = new Grid(this.procedures, eventTime, this.obsProperties, latLonRequest);
-                CDMDataSet.setData(getGridDataset());
-            }
-        } //if the stations are not of cdm type grid then check to see and set cdm data type        
-        else {
-            if (getDatasetFeatureType() == FeatureType.TRAJECTORY) {
-                CDMDataSet = new Trajectory(this.procedures, eventTime, this.obsProperties);
-            } else if (getDatasetFeatureType() == FeatureType.STATION) {
+            /*
+            if (dataset.getDatasetFeatureType() == IDataProduct.STATION) {
                 CDMDataSet = new TimeSeries(this.procedures, eventTime, this.obsProperties);
-            } else if (getDatasetFeatureType() == FeatureType.STATION_PROFILE) {
-                CDMDataSet = new TimeSeriesProfile(this.procedures, eventTime, this.obsProperties);
-            } else if (getDatasetFeatureType() == FeatureType.PROFILE) {
-                CDMDataSet = new Profile(this.procedures, eventTime, this.obsProperties);
-            } else if (getDatasetFeatureType() == FeatureType.SECTION) {
-                CDMDataSet = new Section(this.procedures, eventTime, this.obsProperties);
             } else {
                 formatter = new ErrorFormatter();
                 ((ErrorFormatter)formatter).setException("NetCDF-Java could not recognize the dataset's FeatureType");
                 CDMDataSet = null;
                 return;
             }
+            */
             //only set the data is it is valid
-            CDMDataSet.setData(getFeatureTypeDataSet());
-        }
-    }
-
-    /**
-     * checks for the presence of height in the netcdf dataset if it finds it but not in the variables selected it adds it
-     * @param Axis the axis being checked
-     * @param variableNames1 the observed properties from the request (split)
-     * @return updated observed properties (with altitude added, if found)
-     */
-    private String[] checkNetcdfFileForAxis(CoordinateAxis Axis, String[] variableNames1) {
-        if (Axis != null) {
-            List<String> variableNamesNew = new ArrayList<String>();
-            //check to see if Z present
-            boolean foundZ = false;
-            for (int i = 0; i < variableNames1.length; i++) {
-                String zAvail = variableNames1[i];
-
-                if (zAvail.equalsIgnoreCase(Axis.getFullName())) {
-                    foundZ = true;
-                    break;
-                }
-            }
-
-            //if it not found add it!
-            if (!foundZ && !Axis.getDimensions().isEmpty()) {
-                variableNamesNew = new ArrayList<String>();
-                variableNamesNew.addAll(Arrays.asList(variableNames1));
-                variableNamesNew.add(Axis.getFullName());
-                variableNames1 = new String[variableNames1.length + 1];
-                variableNames1 = (String[]) variableNamesNew.toArray(variableNames1);
-                //*******************************
-            }
-        }
-        return variableNames1;
+            CDMDataSet.setData(dataset.getFeatureTypeDataSet());
+        
     }
 
      /**
@@ -296,16 +187,7 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
      */
     public String getVariableStandardName(String varName) {
         String retval = UNKNOWN;
-
-        for (Variable var : netCDFDataset.getVariables()) {
-            if (varName.equalsIgnoreCase(var.getFullName())) {
-                Attribute attr = var.findAttribute(STANDARD_NAME);
-                if (attr != null) {
-                    retval = attr.getStringValue();
-                }
-            }
-        }
-
+       dataset.getVariableStandardName(varName);
         return retval;
     }
 
@@ -357,6 +239,7 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
     }
 
     public List<String> getRequestedObservedProperties() {
+        /*
         CoordinateAxis heightAxis = netCDFDataset.findCoordinateAxis(AxisType.Height);
 
         List<String> retval = Arrays.asList(obsProperties);
@@ -364,8 +247,10 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
         if (heightAxis != null) {
             retval = ListComprehension.filterOut(retval, heightAxis.getShortName());
         }
-
-        return retval;
+		*/
+    	
+        //return retval;
+    	return null;
     }
 
     public String[] getObservedProperties() {
@@ -388,26 +273,11 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
     //</editor-fold>
 
     public String getFillValue(String obsProp) {
-        Attribute[] attrs = getAttributesOfVariable(obsProp);
-        for (Attribute attr : attrs) {
-            if (attr.getFullNameEscaped().equalsIgnoreCase(FILL_VALUE_NAME)) {
-                return attr.getValue(0).toString();
-            }
-        }
-        return "";
+       return dataset.getFillValue(obsProp);
     }
 
     public boolean hasFillValue(String obsProp) {
-        Attribute[] attrs = getAttributesOfVariable(obsProp);
-        if (attrs == null) {
-            return false;
-        }
-        for (Attribute attr : attrs) {
-            if (attr.getFullNameEscaped().equalsIgnoreCase(FILL_VALUE_NAME)) {
-                return true;
-            }
-        }
-        return false;
+        return dataset.hasFillValue(obsProp);
 
     }
 

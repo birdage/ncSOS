@@ -6,18 +6,9 @@ package com.asascience.ncsos.cdmclasses;
 
 import com.asascience.ncsos.go.ObservationOffering;
 import com.asascience.ncsos.service.BaseRequestHandler;
-import com.asascience.ncsos.util.DatasetHandlerAdapter;
 import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.w3c.dom.Document;
-import ucar.nc2.ft.PointFeature;
-import ucar.nc2.ft.PointFeatureIterator;
-import ucar.nc2.ft.StationTimeSeriesFeature;
-import ucar.nc2.ft.StationTimeSeriesFeatureCollection;
-import ucar.nc2.units.DateFormatter;
-import ucar.nc2.units.DateRange;
-import ucar.nc2.units.DateUnit;
-import ucar.unidata.geoloc.Station;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -93,8 +84,7 @@ public class TimeSeries extends baseCDMClass implements iStationData {
     }
 
 
-    private void createTimeSeriesData(List<String> valueList, DateFormatter dateFormatter, 
-    								  PointFeature pointFeature, StringBuilder builder, int stNum) {
+    private void createTimeSeriesData(List<String> valueList, DateFormatter dateFormatter, PointFeature pointFeature, StringBuilder builder, int stNum) {
         //count++;
         valueList.clear();
         

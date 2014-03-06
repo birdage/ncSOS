@@ -25,7 +25,6 @@ public class TimeUtils
     public static final Comparator<DateTime> DATE_TIME_COMPARATOR =
         new Comparator<DateTime>()
     {
-        @Override
         public int compare(DateTime dt1, DateTime dt2) {
             return dt1.compareTo(dt2);
         }

@@ -13,6 +13,10 @@ import com.asascience.sos.dataproducts.PostgresDataReader;
 
 public class PostgresDataReaderTest {
 
+	/**
+	 * GET CAPS!
+	 */
+	
 	@Test
 	public void test_DR_CheckTableExists() throws SQLException {
 		PostgresDataReader dr = new PostgresDataReader();
@@ -185,6 +189,21 @@ public class PostgresDataReaderTest {
 		dr.setup();
 		assertNotNull(dr.getSensorNames());
 		assertTrue(dr.getSensorNames().size()>1);
+	}
+	
+	/**
+	 * GET OBS!
+	 */
+	
+	@Test
+	public void test_DR_variableAvailable() throws Exception {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
+		dr.setup();
+		//checks that something requested is available
+		assertTrue(dr.isVariableAvailable(table, "temp"));
+		assertFalse(dr.isVariableAvailable(table, "wiggle"));
 	}
 
 }

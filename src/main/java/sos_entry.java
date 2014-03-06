@@ -27,9 +27,6 @@ public class sos_entry {
 
 	public void getCapabilities(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
 		processRequest(request, response);
-		//response.getOutputStream().write("getCaps".getBytes());
-		//response.getOutputStream().write(request.getQueryString().getBytes());
-		//response.getOutputStream().write("getCaps".getBytes());
 	}
 
 	public void processRequest(HttpServletRequest req, HttpServletResponse res) {
@@ -42,7 +39,6 @@ public class sos_entry {
 			Parser md = new Parser();
 			PostgresDataReader dataset = new PostgresDataReader();
 			respMap = md.enhanceGETRequest(dataset, req.getQueryString(),req.getRequestURL() + "?".toString(), tempdir);
-			
 			
 			Writer writer = res.getWriter();
 			OutputFormatter output = (OutputFormatter) respMap.get("outputFormatter");

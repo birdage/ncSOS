@@ -26,6 +26,8 @@ import org.joda.time.Interval;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.asascience.ncsos.cdmclasses.iStationData;
+
 /**
  * 
  * @author abird
@@ -749,6 +751,42 @@ public class PostgresDataReader implements IDataProduct {
 		global.put("publisher_phone", "");
 		return global;
 	}
-
 	
+	/**
+	 * GET OBSERVATION
+	 */
+
+	public boolean isVariableAvailable(String offering,String variableRequested){
+		boolean ret = false;
+		
+		if(getSensorNames().contains(variableRequested)){
+			ret = true;
+		}
+		return ret;
+	}
+	
+	public String getDatasetFeatureType(){
+		return IDataProduct.STATION;
+	}
+	
+	public String getVariableStandardName(String variable){
+		return variable;
+	}
+
+	public Object getFeatureTypeDataSet() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public String getFillValue(String obsProp){
+		return "";
+	}
+	
+	public boolean hasFillValue(String obsProb){
+		return false;
+	}
+	
+	public iStationData getStationData(){
+		return null;
+	}
 }

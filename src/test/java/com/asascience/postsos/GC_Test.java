@@ -1,6 +1,6 @@
 package com.asascience.postsos;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedWriter;
 import java.io.CharArrayWriter;
@@ -9,9 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,15 +18,12 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.junit.Test;
 
-import com.asascience.ncsos.NcSOSTest;
 import com.asascience.ncsos.outputformatter.OutputFormatter;
 import com.asascience.ncsos.service.Parser;
 import com.asascience.ncsos.util.XMLDomUtils;
 import com.asascience.sos.dataproducts.IDataProduct;
 import com.asascience.sos.dataproducts.PostgresDataReader;
 import com.asascience.sos.dataproducts.SampleDataReader;
-
-import java.net.URLEncoder;
 
 public class GC_Test {
 
@@ -65,7 +60,7 @@ public class GC_Test {
 	}
 
 	@Test
-	public void testGenerateSimpleRequest() throws IOException {
+	public void testGenerateSimpleGETCAPSRequest() throws IOException {
 		fail();
 		String tempdir = System.getProperty("java.io.tmpdir");
 
@@ -84,6 +79,29 @@ public class GC_Test {
 		 // Write to disk
         System.out.println("------ Saving output: " + output +" ------");
         fileWriter("/Users/rpsdev/Documents/workspace/postSOS/examples/post_Get_caps.xml", writer,false);
+		
+	}
+	
+	@Test
+	public void testGenerateSimpleGETOBSRequest() throws IOException {
+		
+		String tempdir = System.getProperty("java.io.tmpdir");
+
+		Parser md = new Parser();
+		IDataProduct dataset = new PostgresDataReader();
+
+		String request = "request=getObservation&service=sos&version=1.0.0&offering=_9de0c6acec074ab0bdf706ed1f99f6df_view&observedproperty=temp&responseformat=text/xml";
+
+		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
+				request, "http://localhost:8080/geoserver/ows/" + "?".toString(),
+				tempdir);
+		
+		OutputFormatter output = (OutputFormatter) respMap.get("outputFormatter");
+		Writer writer = new CharArrayWriter();
+		output.writeOutput(writer);
+		 // Write to disk
+        System.out.println("------ Saving output: " + output +" ------");
+        fileWriter("/Users/rpsdev/Documents/workspace/postSOS/examples/post_Get_Obs.xml", writer,false);
 		
 	}
 	

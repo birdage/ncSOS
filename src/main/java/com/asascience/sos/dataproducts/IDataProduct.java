@@ -13,8 +13,14 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
+import com.asascience.ncsos.cdmclasses.iStationData;
+
 public interface IDataProduct {
 
+	public static final String STATION = "timeseries";
+	
+	//CAPS
+	
 	public String[] getOfferingList();
 	
 	public String getReferencedFileLocation(String offering);
@@ -111,5 +117,19 @@ public interface IDataProduct {
 
 	public void setup();
 	
+	//OBS
 	
+	public boolean isVariableAvailable(String offering,String variableRequested);
+	
+	public String getDatasetFeatureType();
+
+	public Object getFeatureTypeDataSet();
+	
+	public String getVariableStandardName(String variable);
+	
+	public String getFillValue(String obsProp);
+	
+	public boolean hasFillValue(String obsProp);
+	
+	public iStationData getStationData();
 }
