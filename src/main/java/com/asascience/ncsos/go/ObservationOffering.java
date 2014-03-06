@@ -54,7 +54,6 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * observedProperties getter
      * @return List (of string types)
      */
-    @Override
     public List getObservationObserveredList(){
         return observedProperties;
     }
@@ -63,7 +62,6 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * observedProperties setter
      * @param list List (of string types)
      */
-    @Override
     public void setObservationObserveredList(List list){
         this.observedProperties = list;
     }
@@ -71,8 +69,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
     /**
      * getter for stationID
      * @return stationID as String
-     */
-    @Override
+     */   
      public String getObservationStationID() {
       return stationID;
     }
@@ -81,7 +78,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for stationID
      * @param stationID stationID as a String
      */
-    @Override
+   
     public void setObservationStationID(String stationID) {
         this.stationID = stationID;
     }
@@ -90,7 +87,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for stationDescription
      * @return stationDescription as a String
      */
-    @Override
+  
     public String getObservationStationDescription() {
        return stationDescription;
     }
@@ -99,7 +96,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for stationDescription
      * @param stationDescription stationDescription as a String
      */
-    @Override
+    
     public void setObservationStationDescription(String stationDescription) {
         this.stationDescription = stationDescription;
     }
@@ -108,7 +105,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for stationName
      * @return stationName as a String
      */
-    @Override
+   
     public String getObservationName() {
        return stationName;
     }
@@ -117,7 +114,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for stationName
      * @param obsName stationName as a String
      */
-    @Override
+   
     public void setObservationName(String obsName) {
       this.stationName = obsName;
     }
@@ -126,7 +123,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for srsName
      * @return srsName as a String
      */
-    @Override
+    
     public String getObservationSrsName() {
         return srsName;
     }
@@ -135,7 +132,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for srsName
      * @param obsSrsName srsName as a String
      */
-    @Override
+    
     public void setObservationSrsName(String obsSrsName) {
        this.srsName = obsSrsName;
     }
@@ -144,7 +141,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for the observation's lower corner "lat lon"
      * @return String representation of the lower corner
      */
-    @Override
+  
     public String getObservationStationLowerCorner() {
        return lowerCornerLatLon;
     }
@@ -154,7 +151,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * @param lat latitude of the observation's lower corner
      * @param lon longitude of the observation's lower corner
      */
-    @Override
+   
     public void setObservationStationLowerCorner(String lat, String lon) {
         this.lowerCornerLatLon = lat.concat(" "+lon);
     }
@@ -163,7 +160,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for the observation's upper corner 
      * @return String representation of the upper corner
      */
-    @Override
+  
     public String getObservationStationUpperCorner() {
         return upperCornerLatLon;
     }
@@ -173,7 +170,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * @param lat latitude of the observation's upper corner
      * @param lon longitude of the observation's upper corner
      */
-    @Override
+   
     public void setObservationStationUpperCorner(String lat, String lon) {
        this.upperCornerLatLon = lat.concat(" "+lon);
     }
@@ -182,7 +179,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for the starting time of the observation
      * @return String time stamp of the start time
      */
-    @Override
+  
     public String getObservationTimeBegin() {
         return timeBegin;
     }
@@ -191,7 +188,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for the starting time of the observation
      * @param DateTime time stamp of the start time
      */
-    @Override
+    
     public void setObservationTimeBegin(String DateTime) {
         this.timeBegin = DateTime;
     }
@@ -200,7 +197,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for the ending time of the observation
      * @return time stamp of the end time
      */
-    @Override
+   
     public String getObservationTimeEnd() {
        return timeEnd;
     }
@@ -209,7 +206,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for the ending time of the observation
      * @param DateTime time stamp of the end time
      */
-    @Override
+    
     public void setObservationTimeEnd(String DateTime) {
         this.timeEnd = DateTime;
     }
@@ -218,7 +215,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * adds the link as an attribute
      * @return @String HTTP Link
      */
-    @Override
+    
     public String getObservationProcedureLink() {
         return procedureLink;
     }
@@ -227,7 +224,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for the procedureLink
      * @param procedureLink the procedureLink
      */
-    @Override
+    
     public void setObservationProcedureLink(String procedureLink) {
         this.procedureLink = procedureLink;
     }
@@ -236,7 +233,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * adds the link as an attribute
      * @return @String HTTP Link
      */
-    @Override
+   
     public String getObservationObservedProperty() {
         return observedProperty;
     }
@@ -245,7 +242,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for the observedProperty (singular)
      * @param observedProperty the observed property from the request
      */
-    @Override
+    
     public void setObservationObservedProperty(String observedProperty) {
         this.observedProperty = observedProperty;
     }
@@ -254,7 +251,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * adds the link as an attribute
      * @return @String HTTP Link
      */
-    @Override
+
     public String getObservationFeatureOfInterest() {
         return featureOfInterest;
     }
@@ -263,7 +260,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for the featureOfIneterest from the dataset
      * @param FeatureOfInterest featureOfInterest
      */
-    @Override
+   
     public void setObservationFeatureOfInterest(String FeatureOfInterest) {
         this.featureOfInterest = FeatureOfInterest;
     }
@@ -272,7 +269,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for obsResultModel
      * @return obsResultModel
      */
-    @Override
+  
     public String getObservationModel() {
        return obsResultModel;
     }
@@ -281,7 +278,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for obsResultModel
      * @param obsResultModel obsResultModel
      */
-    @Override
+  
     public void setObservationModel(String obsResultModel) {
        this.obsResultModel = obsResultModel;
     }
@@ -290,7 +287,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * getter for obsResponseMode
      * @return obsResponseMode
      */
-    @Override
+  
     public String getObservationResponseMode() {
         return obsResponseMode;
     }
@@ -299,7 +296,7 @@ public final class ObservationOffering implements ObservationOfferingInterface {
      * setter for obsResponseMode
      * @param responseMode obsResponseMode
      */
-    @Override
+    
     public void setObservationResponseMode(String responseMode) {
         this.obsResponseMode = responseMode;
     }

@@ -66,7 +66,7 @@ public abstract class OutputFormatter {
     public static final String VALUE = "Value";
     public static final String IDENTIFIER_LIST = "IdentifierList";
     public static final String RESPONSE_FORMAT = "responseFormat";
-    public static final String NETWORK_URN = "urn:ioos:network:";
+    public static final String NETWORK_URN = "urn:ooi:network:";
     public static final String NETWORK_URN_END_ALL = ":all";
     public static final String DESCRIPTION = "description";
     public static final String RESULT_MODEL = "resultModel";

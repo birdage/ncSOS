@@ -8,15 +8,6 @@ import com.asascience.ncsos.service.BaseRequestHandler;
 import com.asascience.ncsos.util.ListComprehension;
 import com.asascience.sos.dataproducts.IDataProduct;
 
-import ucar.nc2.Attribute;
-import ucar.nc2.Variable;
-import ucar.nc2.constants.AxisType;
-import ucar.nc2.constants.CF;
-import ucar.nc2.constants.FeatureType;
-import ucar.nc2.dataset.CoordinateAxis;
-import ucar.nc2.dataset.CoordinateAxis1D;
-import ucar.nc2.dataset.NetcdfDataset;
-
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;

@@ -26,6 +26,7 @@ public class LatLonRect {
 		setLonMin(lonMin);
 	}
 
+
 	public double getLatMin() {
 		return latMin;
 	}
@@ -59,19 +60,19 @@ public class LatLonRect {
 	}
 
 	public String getLowerLeftPoint_lon() {
-		return "";
+		return Double.toString(lonMin);
 	}
 
 	public String getUpperRightPoint_lat() {
-		return "";
+		return Double.toString(getLatMax());
 	}
 
 	public String getLowerLeftPoint_lat() {
-		return "";
+		return Double.toString(latMin);
 	}
 
 	public String getUpperRightPoint_lon() {
-		return "";
+		return Double.toString(lonMax);
 	}
 
 	

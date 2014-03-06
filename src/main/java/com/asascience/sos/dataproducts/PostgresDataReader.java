@@ -2,6 +2,7 @@ package com.asascience.sos.dataproducts;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -20,6 +21,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,6 +34,10 @@ import org.json.JSONObject;
 @SuppressWarnings("unused")
 public class PostgresDataReader implements IDataProduct {
 
+	private static final String GATEWAY_RESPONSE_JSON_NODE = "GatewayResponse";
+	private static final String DATA_JSON_NODE = "data";
+	private static final String NOMINAL_DATETIME = "nominal_datetime";
+	private static final String GEOSPATIAL_BOUNDS = "geospatial_bounds";
 	private static final String DBNAME = "postgres";
 	private static final String DBUSERNAME = "rpsdev";
 	private static final String DBPASS = "";
@@ -41,13 +47,15 @@ public class PostgresDataReader implements IDataProduct {
 	private static final String CONNECTION_PASSED = "Connection working...";
 	
 	private static final String LAT_FIELD = "lat";
+	private static final String TIME_FIELD = "time";
 	private static final String LON_FIELD = "lon";
 	private static final String OOI_PREFIX = "_";
 	private static final String OOI_SUFFIX = "_view";
 	
 	private static final String SessionStartup = "select runCovTest()";
 	
-	
+	public DateTime startDateTime = null;
+	public DateTime endDateTime = null;
 	
 	Connection connection = null;
 	Statement st = null;
@@ -57,7 +65,7 @@ public class PostgresDataReader implements IDataProduct {
 	//available offering list
 	ArrayList<String> requestedOfferingList = new ArrayList<String>();
 
-	HashMap<Integer, LatLonRect> latLonRects = null;
+	HashMap<Integer, LatLonRect> latLonRects = new HashMap<Integer, LatLonRect>();
 	LatLonBounds totalLatLonBounds = new LatLonBounds();
 	private boolean RR_temporal_bounds = false;
 	private boolean RR_geo_bounds = false;
@@ -75,6 +83,7 @@ public class PostgresDataReader implements IDataProduct {
 	
 	
 	private final String USER_AGENT = "Mozilla/5.0";
+	private List<String> sensorList;
 	private static final String server = "http://localhost:5000"; 
 	
 	
@@ -106,10 +115,12 @@ public class PostgresDataReader implements IDataProduct {
 						//add the station parameteres to a list, make sure to put it just as the resource name
 						stationParameterList.put(requestedOfferings[i].substring(1, requestedOfferings[i].length()-5), getVariables(requestedOfferings[i]));
 						//get meta dota about a resource from the RR, make sure to use just the resource name
-						queryResourceRegistry(requestedOfferings[i].substring(1, requestedOfferings[i].length()-5));
-						
+						queryResourceRegistry_Params(requestedOfferings[i].substring(1, requestedOfferings[i].length()-5));
+						//get meta dota about a resource from the RR, make sure to use just the resource name
+						queryResourceResistry_Extents(requestedOfferings[i].substring(1, requestedOfferings[i].length()-5));
 					}
 				}
+				//if these are not set then poop
 				if (!RR_geo_bounds){
 					parseLatLonRects();
 				}
@@ -118,6 +129,8 @@ public class PostgresDataReader implements IDataProduct {
 					parseTemporalBounds();
 				}
 			}
+			
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -126,41 +139,107 @@ public class PostgresDataReader implements IDataProduct {
 
 	}
 	
-	
-	
+	/**
+	 * read extent (temporal,geo) from the resource registry
+	 * @param offering
+	 * @throws Exception 
+	 */
+	public void queryResourceResistry_Extents(String offering) throws Exception{
 
-	private void parseTemporalBounds() {
+		String result = queryResoureResistry(offering, server+"/ion-service/resource_registry/find_resources", "find_resources" ,"\"object_id\": \""+offering+"\", \"restype\": \"DataProduct\"");
+		if (result!=null){
+			JSONArray obj = ((new JSONObject(result.toString())).getJSONObject(DATA_JSON_NODE)).getJSONArray(GATEWAY_RESPONSE_JSON_NODE);
+			JSONArray k  = (JSONArray) obj.get(0);
+			for (int i = 0; i < k.length(); i++) {
+				try {
+					JSONObject newObk = (JSONObject) k.get(i);
+					JSONObject geoBounds = (JSONObject) newObk.get(GEOSPATIAL_BOUNDS);
+					JSONObject tempBounds = (JSONObject) newObk.get(NOMINAL_DATETIME);
+					//SET THE BOUNDS
+					setTheBounds(geoBounds,tempBounds);
+ 					//information has been found!
+ 					break;
+				} catch (Exception e) {
+					//DAMN DIDNT FIND IT
+				e.printStackTrace();
+				}
+			}
+			
+		}else{
+			RR_geo_bounds = false;
+			RR_temporal_bounds = false;
+		}
 		
+	}
+	
+	
+	
+	private void setTheBounds(JSONObject geoBounds, JSONObject tempBounds) {
+	    
+		double lon_w = geoBounds.getDouble("geospatial_longitude_limit_west");
+		double lon_e = geoBounds.getDouble("geospatial_longitude_limit_east");
+		double lat_n = geoBounds.getDouble("geospatial_latitude_limit_north");
+		double lat_s = geoBounds.getDouble("geospatial_latitude_limit_south");
 		
+		latLonRects.put(0, new LatLonRect(lat_s, lon_w, lat_n, lon_e));
+		RR_geo_bounds = true;
+		
+		 
+		//double that represents seconds since 1900-01-01,
+		//string that represents MILLIseconds since 1970-01-01 
+		//python float that's the number of seconds since 1970-01-01
+		
+		//tempBounds
+		Object st = tempBounds.get("start_datetime");
+		System.out.println(st.toString());
+		if (st instanceof String){		
+		}else if  (st instanceof Float){
+			//means its seconds since 1970-01-01
+			double val = (Double) (st);
+			val = val/1000;
+			DateTime now = new DateTime(val,DateTimeZone.UTC);			
+		}
+
+		Object ed = tempBounds.get("end_datetime");
+		System.out.println(ed.toString());
+		if (ed instanceof String){
+		}else if  (ed instanceof Float){
+			//means its seconds since 1970-01-01
+			double val = (Double) (ed);
+			val = val/1000;
+			DateTime now = new DateTime(val,DateTimeZone.UTC);	
+		}
+		
+		RR_temporal_bounds = true;
 	}
 
 	/**
-	 * read parameter information from the resource registry
-	 * @param offering minus the prefix and suffix
-	 * @throws Exception
+	 * main class for parsing post request
+	 * @param offering
+	 * @param queryUrl
+	 * @param params
+	 * @return
+	 * @throws Exception 
 	 */
-	@SuppressWarnings("deprecation")
-	public void queryResourceRegistry(String offering) throws Exception {
-		 
-		String url = server+"/ion-service/resource_registry/read";
-		
+	public String queryResoureResistry(String offering,String queryUrl, String serviceOp,String params) throws Exception{
 		CloseableHttpClient client = new DefaultHttpClient();
-		HttpPost post = new HttpPost(url);
+		HttpPost post = new HttpPost(queryUrl);
  
 		// add header
 		post.setHeader("User-Agent", USER_AGENT);
  
 		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-		String data = "{\"serviceRequest\": {\"serviceName\": \"resource_registry\", \"params\": {\"object_id\": \""+offering+"\"}, \"serviceOp\": \"read\"}}";
+		String data = "{\"serviceRequest\": {\"serviceName\": \"resource_registry\", "
+				+ "\"params\": {"+params+"}, "
+						+ "\"serviceOp\": \""+serviceOp+"\"}}";
 		urlParameters.add(new BasicNameValuePair("payload", data));
 		post.setEntity(new UrlEncodedFormEntity(urlParameters));
 		HttpResponse response = client.execute(post);
 		int respCode = response.getStatusLine().getStatusCode();
-		System.out.println("Response Code : " + respCode);
-
+		//System.out.println("Response Code : " + respCode);
+		
 		// if post was successful
 		if (respCode == 200) {
-
 			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
 			StringBuffer result = new StringBuffer();
@@ -168,53 +247,60 @@ public class PostgresDataReader implements IDataProduct {
 			while ((line = rd.readLine()) != null) {
 				result.append(line);
 			}
-
-			System.out.println(result.toString());
-			
-			// parse the json response and get the data/gatewayresponse
-			JSONObject obj = ((new JSONObject(result.toString())).getJSONObject("data")).getJSONObject("GatewayResponse");
-			String stationStatek = obj.getString("lcstate");
-			//get param dict
-			JSONObject l = obj.getJSONObject("parameter_dictionary");
-			//number of variables
-			int val = l.getInt("_ParameterDictionary__count");
-			
-			//loop through the parameters and get the units
-			HashMap<String, String> unitHash = new HashMap<String, String>();
-			for (int i = 0; i < stationParameterList.get(offering).length; i++) {
-				String param = stationParameterList.get(offering)[i];
-				if (!ignoreParamList.contains(param)){
-					try {
-						JSONArray paramObject = l.getJSONArray(param);
-						JSONObject actualParamObject = (JSONObject) paramObject.get(1);
-						String paramUnits = actualParamObject.getString("uom");
-						unitHash.put(param, paramUnits);
-						//JSONObject d =actualParamObject.getJSONObject("param_type");
-					} catch (Exception e) {
-						unitHash.put(param, "unknown");
-					}
-										
-				}
-			}
-			//finally add the units to the  main hash
-			unitList.put(offering,unitHash);
-			
-			//try and grab the temporal and spatial bounds
-			try {
-				//try and get temporal
-				JSONObject d = obj.getJSONObject("nominal_datetime");
-				RR_temporal_bounds = true;
-				//try and get geo bounds
-				JSONObject g = obj.getJSONObject("geospatial_bounds");
-				RR_geo_bounds = true;
-			} catch (Exception e) {
-				//well there not avaiable....
-			}
+			return result.toString();
 		}
 		post.releaseConnection();
 		client.close();
+		return null;
 	}
 	
+	
+	/**
+	 * read parameter information from the resource registry
+	 * @param offering minus the prefix and suffix
+	 * @throws Exception
+	 */
+	@SuppressWarnings("deprecation")
+	public void queryResourceRegistry_Params(String offering) throws Exception {
+		String result = queryResoureResistry(offering, server+"/ion-service/resource_registry/read", "read" ,"\"object_id\": \""+offering+"\"");
+		
+		System.out.println(result.toString());
+		
+		if (result!=null){
+			// parse the json response and get the data/gatewayresponse
+			JSONObject obj = ((new JSONObject(result.toString())).getJSONObject(DATA_JSON_NODE)).getJSONObject(GATEWAY_RESPONSE_JSON_NODE);
+			String stationStatek = obj.getString("lcstate");
+			// get param dict
+			JSONObject l = obj.getJSONObject("parameter_dictionary");
+			// number of variables
+			int val = l.getInt("_ParameterDictionary__count");
+	
+			// loop through the parameters and get the units
+			HashMap<String, String> unitHash = new HashMap<String, String>();
+			for (int i = 0; i < stationParameterList.get(offering).length; i++) {
+				String param = stationParameterList.get(offering)[i];
+				if (!ignoreParamList.contains(param)) {
+					try {
+						JSONArray paramObject = l.getJSONArray(param);
+						JSONObject actualParamObject = (JSONObject) paramObject
+								.get(1);
+						String paramUnits = actualParamObject.getString("uom");
+						unitHash.put(param, paramUnits);
+						// JSONObject d
+						// =actualParamObject.getJSONObject("param_type");
+					} catch (Exception e) {
+						unitHash.put(param, "unknown");
+					}
+	
+				}
+			}
+			// finally add the units to the main hash
+			unitList.put(offering, unitHash);
+		}
+		
+	}
+	
+	@Deprecated //should not be used really
 	private void parseLatLonRects(){
 		this.latLonRects = new HashMap<Integer, LatLonRect>();
 		
@@ -228,6 +314,15 @@ public class PostgresDataReader implements IDataProduct {
 		
 	}
 	
+	/**
+	 * if the temporal bounds are not set then figure them out!
+	 */
+	@Deprecated //should not be used really
+	private void parseTemporalBounds() {
+		//dont do anything at the mo as this should of been done from the RR
+	}
+	
+	@Deprecated //should not be used really
 	private void getCalculatedRectangle(String requestedOffering,int id) {
 		if (requestedOffering!=null){
 			try {
@@ -293,6 +388,11 @@ public class PostgresDataReader implements IDataProduct {
 	 * @throws SQLException
 	 */
 	public String getMinMaxLatLon_CMD(String dataset_id){
+		String sqlcmd ="select min("+LAT_FIELD+"),min("+LON_FIELD+"),max("+LAT_FIELD+"),max("+LON_FIELD+") from \"" + dataset_id + "\";";
+		return sqlcmd;
+	}
+	
+	public String getMinMaxDates_CMD(String dataset_id){
 		String sqlcmd ="select min("+LAT_FIELD+"),min("+LON_FIELD+"),max("+LAT_FIELD+"),max("+LON_FIELD+") from \"" + dataset_id + "\";";
 		return sqlcmd;
 	}
@@ -479,22 +579,19 @@ public class PostgresDataReader implements IDataProduct {
 	}
 
 	public String[] getOfferingList() {
-		// TODO Auto-generated method stub
-		return null;
+		return requestedOfferings;
 	}
 
+	//covereage location
 	public String getReferencedFileLocation(String offering) {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	public String getFeatureDatasetType(String offering) {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	public boolean hasFeatureDatasetType(String offering) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -515,22 +612,20 @@ public class PostgresDataReader implements IDataProduct {
 	}
 
 	public String findFeatureType(String offering) {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	public String findCoordinateAxis(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	public double[] getLats(String offering) {
-		// TODO Auto-generated method stub
+		getLatField_CMD(offering);
 		return null;
 	}
 
 	public double[] getLons(String offering) {
-		// TODO Auto-generated method stub
+		getLatField_CMD(offering);
 		return null;
 	}
 
@@ -561,7 +656,7 @@ public class PostgresDataReader implements IDataProduct {
 
 	public String[] getSensorNames(String offering) {
 		try {
-			return getStringArray(makeSqlRequest(getTableFields_CMD(offering)));
+			getStringArray(makeSqlRequest(getTableFields_CMD(offering)));
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -570,72 +665,89 @@ public class PostgresDataReader implements IDataProduct {
 	}
 
 	public List<String> getSensorNames() {
-		// TODO Auto-generated method stub
-		return null;
+		if (sensorList == null){
+			this.sensorList = new ArrayList<String>(); 
+			HashMap<String, String> list = unitList.get(requestedOfferingList.get(0).substring(1, requestedOfferingList.get(0).length()-5));
+			sensorList.addAll(list.keySet());
+		}
+		return sensorList;
 	}
 
 	public DateTime getStartDateTime(String offering) {
-		// TODO Auto-generated method stub
-		return null;
+		return new DateTime(startDateTime);
 	}
 
+	/**
+	 * overall DT
+	 * @return
+	 */
 	public DateTime getStartDateTime() {
-		// TODO Auto-generated method stub
-		return null;
+		return (startDateTime);
 	}
 
 	public DateTime getEndDateTime(String offering) {
-		// TODO Auto-generated method stub
-		return null;
+		return (endDateTime);
 	}
-
+	
+	/**
+	 * overall DT
+	 * @return
+	 */
 	public DateTime getEndDateTime() {
-		// TODO Auto-generated method stub
-		return null;
+		return new DateTime(endDateTime);
 	}
 
 	public Interval getDateTimeRange(String offering) {
-		// TODO Auto-generated method stub
-		return null;
+		return new Interval(startDateTime,endDateTime);
 	}
 
 	public HashMap<Integer, Interval> getDateTimeRanges() {
-		// TODO Auto-generated method stub
-		return null;
+		HashMap<Integer, Interval> hash = new HashMap<Integer, Interval>();
+		hash.put(0, new Interval(startDateTime,endDateTime));
+		return hash;
 	}
 
 	public HashMap<Integer, String> getStationNames() {
-		return null;
+		HashMap<Integer, String> stationHash = new HashMap<Integer, String>();
+		for (int i = 0; i < requestedOfferings.length; i++) {
+			stationHash.put(i, requestedOfferings[i]);
+		}
+		return stationHash;
 	}
 
 	public String getReferenceAuthority() {
-		// TODO Auto-generated method stub
-		return null;
+		return "ooi";
 	}
 
 	public double getStationLat(int stationIndex) {
-		// TODO Auto-generated method stub
-		return 0;
+		return latLonRects.get(stationIndex).getLatMin();
 	}
 
 	public double getStationLon(int stationIndex) {
-		// TODO Auto-generated method stub
-		return 0;
+		return latLonRects.get(stationIndex).getLonMin();
 	}
 
 	public String[] getCRS_SRS_authorities() {
-		// TODO Auto-generated method stub
-		return null;
+		String[] data = { "ooi", "data", "product" };
+		return data;
 	}
 
 	public ArrayList<String> getCoordinateNames() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<String> data = new ArrayList<String>();
+		data.add("time");
+		return data;
 	}
 
 	public HashMap<String, Object> getGlobalAttributes() {
-		// TODO Auto-generated method stub
-		return null;
+		HashMap<String, Object> global = new HashMap<String, Object>();
+		global.put("title", "ooi title");
+		global.put("summary", "OOI data product");
+		global.put("access_constraints", "");
+		global.put("publisher_name", "ooi");
+		global.put("publisher_email","ooi");
+		global.put("keywords", "ooi_data_product");
+		global.put("publisher_phone", "");
+		return global;
 	}
 
 	

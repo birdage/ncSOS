@@ -8,7 +8,6 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-import com.asascience.sos.dataproducts.HttpURLConnectionExample;
 import com.asascience.sos.dataproducts.LatLonRect;
 import com.asascience.sos.dataproducts.PostgresDataReader;
 
@@ -42,16 +41,7 @@ public class PostgresDataReaderTest {
 			assertEquals(fields[i],vals[i]);
 		}
 	}
-
-	@Test
-	public void test_DR_GetAvaiableUnits() throws Exception {
-		fail("need to add units to something!");
-	}
 	
-	@Test
-	public void test_DR_GetStartAndEndDate() throws Exception {
-		fail("need to add start and end dates");
-	}
 	
 	@Test
 	public void test_DR_GetLatLonFields() throws Exception {
@@ -102,11 +92,11 @@ public class PostgresDataReaderTest {
 		//----------
 		double lons_min = lons[0];
 		double lons_max = lons[lons.length-1];
-		
-		assertEquals(lats_max, rect.getLatMax(),0);
-		assertEquals(lons_max, rect.getLonMax(),0);
-		assertEquals(lats_min, rect.getLatMin(),0);
-		assertEquals(lons_min, rect.getLonMin(),0);
+		//check the vals
+		assertFalse(Double.isNaN(lons_max));
+		assertFalse(Double.isNaN(lons_min));
+		assertFalse(Double.isNaN(lats_max));
+		assertFalse(Double.isNaN(lats_min));
 	}
 	
 	/**
@@ -138,9 +128,14 @@ public class PostgresDataReaderTest {
 	
 	@Test
 	public void test_DR_TemporalExtraction() throws Exception {
-		fail("not done");
 		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
 		dr.setup();
+		assertNotNull(dr.getStartDateTime());
+		assertNotNull(dr.getEndDateTime());
+		assertNotNull(dr.getDateTimeRange(table));
+		assertNotNull(dr.getDateTimeRanges());
 	}
 	
 	@Test
@@ -158,8 +153,38 @@ public class PostgresDataReaderTest {
 		String table = grabFDT(dr);
 		dr.setOfferings(table);
 		dr.setup();
-		dr.queryResourceRegistry(table.substring(1, table.length()-5));
+		dr.queryResourceRegistry_Params(table.substring(1, table.length()-5));
 		assertTrue(dr.unitList!=null);
 		assertTrue(dr.unitList.size()==1);
 	}
+	
+	@Test
+	public void test_HTTP_POST_EXTENTS() throws Exception {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
+		dr.setup();
+		String val =dr.queryResoureResistry(table.substring(1, table.length()-5), "http://localhost:5000/ion-service/resource_registry/find_resources", "find_resources" ,"'object_id': '"+table.substring(1, table.length()-5)+"', \"restype\": \"DataProduct\"");
+		assertNotNull(val);
+	}
+	
+	@Test
+	public void testName() throws Exception {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
+		dr.setup();
+		dr.queryResourceResistry_Extents(table.substring(1, table.length()-5));
+	}
+	
+	@Test
+	public void test_DR_sensorNames() throws Exception {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
+		dr.setup();
+		assertNotNull(dr.getSensorNames());
+		assertTrue(dr.getSensorNames().size()>1);
+	}
+
 }

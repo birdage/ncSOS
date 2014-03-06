@@ -25,12 +25,11 @@ public class sos_entry {
 		processRequest(request, response);
 	}
 
-	public void getCapabilities(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
-
-		response.getOutputStream().write("getCaps".getBytes());
-		response.getOutputStream().write(request.getQueryString().getBytes());
-		response.getOutputStream().write("getCaps".getBytes());
+	public void getCapabilities(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
+		processRequest(request, response);
+		//response.getOutputStream().write("getCaps".getBytes());
+		//response.getOutputStream().write(request.getQueryString().getBytes());
+		//response.getOutputStream().write("getCaps".getBytes());
 	}
 
 	public void processRequest(HttpServletRequest req, HttpServletResponse res) {
@@ -38,13 +37,13 @@ public class sos_entry {
 
 		try {
 			// see http://tomcat.apache.org/tomcat-5.5-doc/config/context.html
-			// ----- workdir
 			String tempdir = System.getProperty("java.io.tmpdir");
 
 			Parser md = new Parser();
 			PostgresDataReader dataset = new PostgresDataReader();
 			respMap = md.enhanceGETRequest(dataset, req.getQueryString(),req.getRequestURL() + "?".toString(), tempdir);
-
+			
+			
 			Writer writer = res.getWriter();
 			OutputFormatter output = (OutputFormatter) respMap.get("outputFormatter");
 			res.setContentType(output.getContentType().toString());

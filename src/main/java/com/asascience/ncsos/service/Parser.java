@@ -151,8 +151,7 @@ public class Parser {
 				}
 
 				try {
-					capHandler = new GetCapabilitiesRequestHandler(dataset,
-							threddsURI, sections);
+					capHandler = new GetCapabilitiesRequestHandler(dataset,threddsURI, sections);
 				} catch (IOException ex) {
 					_log.error(ex.getMessage(), ex);
 					capHandler = null;
@@ -160,13 +159,10 @@ public class Parser {
 
 				if (capHandler != null) {
 					parseGetCaps(capHandler);
-					retval.put(OUTPUT_FORMATTER,
-							capHandler.getOutputFormatter());
+					retval.put(OUTPUT_FORMATTER,capHandler.getOutputFormatter());
 				} else if (!retval.containsKey(OUTPUT_FORMATTER)) {
-					errorHandler
-							.setException("Internal Error in preparing output for GetCapabilities request, received null handler.");
-					retval.put(OUTPUT_FORMATTER,
-							errorHandler.getOutputFormatter());
+					errorHandler.setException("Internal Error in preparing output for GetCapabilities request, received null handler.");
+					retval.put(OUTPUT_FORMATTER,errorHandler.getOutputFormatter());
 				}
 			} else if (request.equalsIgnoreCase(GETOBSERVATION)) {
 				GetObservationRequestHandler obsHandler = null;
