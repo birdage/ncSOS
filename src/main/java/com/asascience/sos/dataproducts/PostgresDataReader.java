@@ -749,6 +749,7 @@ public class PostgresDataReader implements IDataProduct {
 		global.put("publisher_email","ooi");
 		global.put("keywords", "ooi_data_product");
 		global.put("publisher_phone", "");
+		global.put("publisher_url", "");
 		return global;
 	}
 	

@@ -38,6 +38,7 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 	private String TITLE;
 	private String CONNECTION_PASSED;
 	private String SessionStartup;
+	public static String TIME_FIELD = "time";
     
     public void setParms(String stationName, String[] eventTime, String[] variableNames) {
     	startDate = null;
@@ -163,7 +164,7 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 		return sqlcmd;
 	}
 	
-	private String getDataField_CMD(String dataset_id){
+	private String getDataField_CMD(String dataset_id,String whereClause){
 		String sqlcmd ="select ";
 		
 		for (int i = 0; i < variableNames.length; i++) {
@@ -172,8 +173,11 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 				sqlcmd+= ",";
 			}
 		}
-		
+		if (whereClause==null){
 		sqlcmd+= " from " + dataset_id + ";";
+		}else{
+			sqlcmd+= " from " + dataset_id + " where " + whereClause + ";";	
+		}
 		return sqlcmd;
 	}
 	
@@ -182,15 +186,15 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 		
 		String sqlcmd = null;
 		if (startDate ==null){
-			sqlcmd = getDataField_CMD(reqStationNames.get(0));
+			sqlcmd = getDataField_CMD(reqStationNames.get(0),null);
 		}
 		//just a start date
 		else if (endDate==null && startDate!=null){
-			
+			sqlcmd = getDataField_CMD(reqStationNames.get(0),"time ='"+startDate+"'");
 		}
 		//both start and end
 		else if(endDate!=null && startDate!=null){
-			
+			sqlcmd = getDataField_CMD(reqStationNames.get(0),"time between '"+startDate+"' and '"+endDate+"'");
 		}
 		rs = makeSqlRequest("select Version()");
 		printResultsSet(rs);
@@ -198,14 +202,14 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 		rs = makeSqlRequest(SessionStartup);
 		printResultsSet(rs);
 		
+		//make sure you dont 
 		connection.setAutoCommit(false);
-		
-		rs = makeSqlRequest(getDataField_CMD(reqStationNames.get(0)));
+		rs = makeSqlRequest(sqlcmd);
 		printResultsSet(rs,builder);
 		
 	}
 	
-	public static String TIME_FIELD = "time";
+	
 
 	//blockSeparator=" " decimalSeparator="." tokenSeparator=","/>
 	private void printResultsSet(ResultSet rs,StringBuilder builder) throws SQLException {
@@ -218,19 +222,17 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 					//string date time to iso date time
 					String dateTimeString = (rs.getString(i+1));
 					DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-					DateTime dt = new DateTime(formatter.parseDateTime(dateTimeString),DateTimeZone.UTC);
-					
+					DateTime dt = formatter.withZone(DateTimeZone.forID("UTC")).parseDateTime(dateTimeString);
 					DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 					builder.append(fmt.print(dt));
 				}else{
 					builder.append(rs.getString(i+1));
-					//separate out fields
-					
 				}
 				if (i<meta.getColumnCount()-1){
 					builder.append(",");
 				}
 			}
+			//line ending
 			builder.append(" ");
 		} 
 		rs.close();
@@ -244,7 +246,7 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 	}
 
 	public String getStationName(int idNum) {
-		return null;
+		return reqStationNames.get(idNum);
 	}
 
 	public double getLowerLat(int stNum) {

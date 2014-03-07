@@ -124,7 +124,7 @@ public class GC_Test {
 
 		Parser md = new Parser();
 		IDataProduct dataset = new PostgresDataReader();
-		String request = "request=getCapabilities&service=sos&version=1.0.0&offering=64b12a0744fb49a48e48bd8c8434c70c";
+		String request = "request=getCapabilities&service=sos&version=1.0.0&offering=_9de0c6acec074ab0bdf706ed1f99f6df_view";
 
 		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
 				request, "eoi-dev1.oceanobservatories.org" + "?".toString(),
