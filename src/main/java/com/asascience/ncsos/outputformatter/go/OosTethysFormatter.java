@@ -82,9 +82,6 @@ public class OosTethysFormatter extends BaseOutputFormatter {
     }
     
     private void setObservationMeta(Element parent, String procName, int index) {
-        // set description and name
-//        parent.getElementsByTagName("gml:description").item(0).setTextContent("");
-//        parent.getElementsByTagName("name").item(0).setTextContent("");
         // set bounded by
         Element bounds = (Element) parent.getChild(BOUNDED_BY, GML_NS);
         Element envelope = new Element(ENVELOPE, GML_NS);
@@ -104,8 +101,7 @@ public class OosTethysFormatter extends BaseOutputFormatter {
         // add each of the observed properties we are looking for
         for (String obs : this.handler.getObservedProperties()) {
             // don't add height/depth vars; lat & lon
-            if (!obs.equalsIgnoreCase("alt") && !obs.equalsIgnoreCase("height") && !obs.equalsIgnoreCase("z") &&
-                !obs.equalsIgnoreCase("lat") && !obs.equalsIgnoreCase("lon"))
+            if (!obs.equalsIgnoreCase("alt") && !obs.equalsIgnoreCase("height") && !obs.equalsIgnoreCase("z") && !obs.equalsIgnoreCase("lat") && !obs.equalsIgnoreCase("lon"))
                 parent.addContent(createNodeWithAttribute(OM_NS, OBSERVED_PROPERTY, XLINK_NS, "href", obs));
         }
         // feature of interest

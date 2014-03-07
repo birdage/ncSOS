@@ -1,7 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/ows/1.1 http://schemas.opengis.net/ows/1.1.0/owsAll.xsd">
-  <ows:Exception exceptionCode="InvalidParameterValue" locator="observedProperty">
-    <ows:ExceptionText>observed property - "temp" - was not found in the dataset</ows:ExceptionText>
-  </ows:Exception>
-</ows:ExceptionReport>
+<om:ObservationCollection xmlns:om="http://www.opengis.net/om/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml" xmlns:swe="http://www.opengis.net/swe/1.0" xsi:schemaLocation="http://www.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observation.xsd">
+  <gml:description>OOI data product</gml:description>
+  <gml:name>ooi title</gml:name>
+  <gml:boundedBy>
+    <gml:Envelope srsName="ooi">
+      <!-- overwrite these with your actual offering ROI -->
+      <gml:lowerCorner>0.0 0.0</gml:lowerCorner>
+      <gml:upperCorner>0.0 0.0</gml:upperCorner>
+    </gml:Envelope>
+  </gml:boundedBy>
+  <om:member>
+    <om:Observation>
+      <gml:description />
+      <gml:name />
+      <gml:boundedBy>
+        <gml:Envelope srsName="ooi">
+          <gml:lowerCorner>0.0 0.0</gml:lowerCorner>
+          <gml:upperCorner>0.0 0.0</gml:upperCorner>
+        </gml:Envelope>
+      </gml:boundedBy>
+      <om:samplingTime>
+        <gml:TimePeriod gml:id="DATA_TIME">
+          <gml:beginPosition />
+          <gml:endPosition />
+        </gml:TimePeriod>
+      </om:samplingTime>
+      <om:procedure xlink:href="urn:ooi:station:ncsos:_9de0c6acec074ab0bdf706ed1f99f6df_view" />
+      <om:featureOfInterest xlink:href="urn:ooi:station:ncsos:_9de0c6acec074ab0bdf706ed1f99f6df_view" />
+      <om:result>
+        <om:DataArray>
+          <swe:elementCount>
+            <swe:Count>
+              <swe:value>0</swe:value>
+            </swe:Count>
+          </swe:elementCount>
+          <swe:elementType name="SimpleDataArray">
+            <swe:DataRecord>
+              <swe:field name="time">
+                <swe:Time definition="http://www.opengis.net/def/property/OGC/0/SamplingTime">
+                  <swe:uom xlink:href="http://www.opengis.net/def/uom/ISO-8601/0/Gregorian" />
+                </swe:Time>
+              </swe:field>
+            </swe:DataRecord>
+          </swe:elementType>
+          <swe:encoding>
+            <swe:TextBlock blockSeparator=" " decimalSeparator="." tokenSeparator="," />
+          </swe:encoding>
+          <swe:values />
+        </om:DataArray>
+      </om:result>
+    </om:Observation>
+  </om:member>
+</om:ObservationCollection>
 

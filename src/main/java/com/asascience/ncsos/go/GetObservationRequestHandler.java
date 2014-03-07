@@ -134,33 +134,30 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
         if (offering != null) {
             checkProceduresAgainstOffering(offering);
         }
-
-        setCDMDatasetForStations(dataset, eventTime, latLonRequest);
+        //MAYBE?
+        obsProperties = dataset.getSensorNames(offering);
+        setCDMDatasetForStations(dataset, offering,eventTime, latLonRequest,variableNames);
     }
 
-    private void setCDMDatasetForStations(IDataProduct dataset, String[] eventTime, Map<String, String> latLonRequest) throws IOException {
+    private void setCDMDatasetForStations(IDataProduct dataset, String offering, String[] eventTime, Map<String, String> latLonRequest,String[] requestedVariables) throws IOException {
         // strip out text if the station is defined by indices
         //grid operation
             if (dataset.getStationData()!=null){
             	CDMDataSet = dataset.getStationData();
+            	
             }else {
                 formatter = new ErrorFormatter();
                 ((ErrorFormatter)formatter).setException("NetCDF-Java could not recognize the dataset's FeatureType");
                 CDMDataSet = null;
                 return;
             }
-            /*
-            if (dataset.getDatasetFeatureType() == IDataProduct.STATION) {
-                CDMDataSet = new TimeSeries(this.procedures, eventTime, this.obsProperties);
-            } else {
-                formatter = new ErrorFormatter();
-                ((ErrorFormatter)formatter).setException("NetCDF-Java could not recognize the dataset's FeatureType");
-                CDMDataSet = null;
-                return;
-            }
-            */
+            
+            
             //only set the data is it is valid
+            //dont use.....
             CDMDataSet.setData(dataset.getFeatureTypeDataSet());
+            //sets the param information
+            CDMDataSet.setParms(offering,eventTime,requestedVariables);
         
     }
 

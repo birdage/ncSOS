@@ -201,6 +201,8 @@ public interface iStationData {
      * @return a List of Strings that follow "lat lon"
      */
     public List<String> getLocationsString(int stNum);
+
+	public void setParms(String offering,String[] eventTime, String[] requestedVariables);
        
     
 }

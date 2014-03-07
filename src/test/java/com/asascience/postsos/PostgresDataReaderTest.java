@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.asascience.sos.dataproducts.LatLonRect;
 import com.asascience.sos.dataproducts.PostgresDataReader;
+import com.asascience.sos.dataproducts.postgresStationData;
 
 public class PostgresDataReaderTest {
 
@@ -205,5 +206,31 @@ public class PostgresDataReaderTest {
 		assertTrue(dr.isVariableAvailable(table, "temp"));
 		assertFalse(dr.isVariableAvailable(table, "wiggle"));
 	}
+	
+	@Test
+	public void test_SR_getData() throws Exception {
+		postgresStationData st = new postgresStationData();
+		String[] variables = {"temp"};
+		st.setParms("_9de0c6acec074ab0bdf706ed1f99f6df_view", null, variables);
+		String ret = st.createDataString(0);
+		System.out.println(ret);
+		assertNotNull(ret);
+	}	
 
+	@Test
+	public void test_SR_getDataFromDB() throws Exception {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
+		dr.setup();
+		postgresStationData st = (postgresStationData) dr.getStationData();
+		String[] variables = {"time","temp","density"};
+		st.setParms("_9de0c6acec074ab0bdf706ed1f99f6df_view", null, variables);
+		String ret = st.createDataString(0);
+		System.out.println(ret);
+		assertNotNull(ret);
+		assertTrue(ret.startsWith("2011-02-11T06:01:01.000Z"));
+	}	
+	
+	
 }

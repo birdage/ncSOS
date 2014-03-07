@@ -131,5 +131,9 @@ public interface IDataProduct {
 	
 	public boolean hasFillValue(String obsProp);
 	
+	/**
+	 * returns the interface to the station data object
+	 * @return
+	 */
 	public iStationData getStationData();
 }

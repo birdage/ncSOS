@@ -174,8 +174,7 @@ public class Parser {
 					coordsHash.put(LON, queryParameters.get(LON).toString());
 				}
 				if (queryParameters.containsKey(DEPTH)) {
-					coordsHash
-							.put(DEPTH, queryParameters.get(DEPTH).toString());
+					coordsHash.put(DEPTH, queryParameters.get(DEPTH).toString());
 				}
 				try {
 

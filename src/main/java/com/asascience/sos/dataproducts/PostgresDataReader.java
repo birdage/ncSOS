@@ -787,6 +787,9 @@ public class PostgresDataReader implements IDataProduct {
 	}
 	
 	public iStationData getStationData(){
-		return null;
+		//closeFile(null);
+		postgresStationData dset = new postgresStationData();
+		dset.setConnectionParams(DBSERVER,DBPORT,DBNAME,DBUSERNAME,DBPASS,CONNECTION_PASSED,TITLE,SessionStartup);
+		return dset;
 	}
 }

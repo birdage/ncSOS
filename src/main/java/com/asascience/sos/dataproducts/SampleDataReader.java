@@ -7,6 +7,8 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
+import com.asascience.ncsos.cdmclasses.iStationData;
+
 public class SampleDataReader implements IDataProduct {
 
 	// GETCAPS--------------------------------------------------------------------
@@ -208,6 +210,11 @@ public class SampleDataReader implements IDataProduct {
 	public boolean hasFillValue(String obsProp) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public iStationData getStationData() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	//--------------------------------------------------------------------

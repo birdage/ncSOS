@@ -58,16 +58,6 @@ public abstract class baseCDMClass implements iStationData {
             lowerAlt = stationList.get(i).getAltitude();
         }
     }
-
-    /*
-    protected Date getDateForTime(double timeVal, DateUnit dateUnit){
-    	if (Double.isNaN(timeVal)) return null;
-    	double secs = dateUnit.getTimeUnit().getValueInSeconds(timeVal); //
-    	return new Date(Math.round( ((double) dateUnit.getDateOrigin().getTime()+ (1000.0*secs))));
-    }
-    */
-    
-    
    
     public List<String> getStationNames() {
         return reqStationNames;
