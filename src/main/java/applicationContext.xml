@@ -24,6 +24,7 @@
             <list>
                 <value>getObservation</value>
                 <value>getCapabilities</value>
+                <value>echo</value>
             </list>
         </constructor-arg>
 

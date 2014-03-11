@@ -23,6 +23,10 @@ public class sos_entry {
 		// Do nothing
 	}
 
+	public void echo(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
+		 response.getOutputStream().write( "SOS SERVICE IS UP.....Hello World!".getBytes() );
+	}
+	
 	public void getObservation(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
 		processRequest(request, response);
 	}
@@ -35,7 +39,7 @@ public class sos_entry {
 		respMap = new HashMap<String, Object>();
 		
 		File currentDirectory = new File(new File(BaseOutputFormatter.SOSDirectory).getAbsolutePath());
-		_log.info("SOS:ROOT DIRECTORY:"+currentDirectory.getAbsolutePath());
+		_log.warn("SOS:ROOT DIRECTORY:"+currentDirectory.getAbsolutePath());
 		
 		try {
 			// see http://tomcat.apache.org/tomcat-5.5-doc/config/context.html
