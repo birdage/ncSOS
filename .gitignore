@@ -33,3 +33,5 @@ ncsos.iml
 *.db
 /tests
 /target
+/sos_resources
+/release
