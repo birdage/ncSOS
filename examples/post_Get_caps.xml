@@ -2,26 +2,26 @@
 <sos:Capabilities xmlns:sos="http://www.opengis.net/sos/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:om="http://www.opengis.net/om/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sos/1.0 http://schemas.opengis.net/sos/1.0.0/sosAll.xsd" version="1.0.0">
   <ows:ServiceIdentification>
     <ows:Title>ooi title</ows:Title>
-    <ows:Abstract>test sample sample</ows:Abstract>
+    <ows:Abstract>OOI data product</ows:Abstract>
     <ows:Keywords>
-      <ows:Keyword />
+      <ows:Keyword>ooi_data_product</ows:Keyword>
     </ows:Keywords>
     <ows:ServiceType codeSpace="http://opengeospatial.net">OGC:SOS</ows:ServiceType>
     <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
     <ows:Fees />
-    <ows:AccessConstraints>test contraints</ows:AccessConstraints>
+    <ows:AccessConstraints />
   </ows:ServiceIdentification>
   <ows:ServiceProvider>
-    <ows:ProviderName>No global attribute 'publisher_name' found.</ows:ProviderName>
-    <ows:ProviderSite xlink:href="No global attribute 'publisher_url' found." />
+    <ows:ProviderName>ooi</ows:ProviderName>
+    <ows:ProviderSite xlink:href="" />
     <ows:ServiceContact>
-      <ows:IndividualName>No global attribute 'publisher_name' found.</ows:IndividualName>
+      <ows:IndividualName>ooi</ows:IndividualName>
       <ows:ContactInfo>
         <ows:Phone>
-          <ows:Voice>No global attribute 'publisher_phone' found.</ows:Voice>
+          <ows:Voice />
         </ows:Phone>
         <ows:Address>
-          <ows:ElectronicMailAddress>No global attribute 'publisher_email' found.</ows:ElectronicMailAddress>
+          <ows:ElectronicMailAddress>ooi</ows:ElectronicMailAddress>
         </ows:Address>
       </ows:ContactInfo>
     </ows:ServiceContact>
@@ -51,21 +51,31 @@
       </ows:DCP>
       <ows:Parameter name="offering">
         <ows:AllowedValues>
-          <ows:Value>urn:ioos:station:ncsos:offer1</ows:Value>
-          <ows:Value>urn:ioos:network:ncsos:all</ows:Value>
+          <ows:Value>urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view</ows:Value>
+          <ows:Value>urn:ooi:network:ncsos:all</ows:Value>
         </ows:AllowedValues>
       </ows:Parameter>
       <ows:Parameter name="observedProperty">
         <ows:AllowedValues>
-          <ows:Value>temp_sen</ows:Value>
-          <ows:Value>density_sen</ows:Value>
-          <ows:Value>salinity_sen</ows:Value>
-          <ows:Value>temp_L1_sen</ows:Value>
+          <ows:Value>lon_lookup</ows:Value>
+          <ows:Value>lon</ows:Value>
+          <ows:Value>density</ows:Value>
+          <ows:Value>pressure</ows:Value>
+          <ows:Value>salinity</ows:Value>
+          <ows:Value>conductivity_L1</ows:Value>
+          <ows:Value>time</ows:Value>
+          <ows:Value>conductivity</ows:Value>
+          <ows:Value>temp</ows:Value>
+          <ows:Value>lat_lookup</ows:Value>
+          <ows:Value>pressure_L1</ows:Value>
+          <ows:Value>density_lookup</ows:Value>
+          <ows:Value>lat</ows:Value>
+          <ows:Value>temp_L1</ows:Value>
         </ows:AllowedValues>
       </ows:Parameter>
       <ows:Parameter name="procedure">
         <ows:AllowedValues>
-          <ows:Value>urn:ioos:station:ncsos:offer1</ows:Value>
+          <ows:Value>urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view</ows:Value>
         </ows:AllowedValues>
       </ows:Parameter>
     </ows:Operation>
@@ -82,7 +92,7 @@
       </ows:Parameter>
       <ows:Parameter name="procedure">
         <ows:AllowedValues>
-          <ows:Value>urn:ioos:station:ncsos:offer1</ows:Value>
+          <ows:Value>urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view</ows:Value>
         </ows:AllowedValues>
       </ows:Parameter>
     </ows:Operation>
@@ -109,51 +119,71 @@
     <sos:ObservationOfferingList>
       <sos:ObservationOffering gml:id="network-all">
         <gml:description>Network offering containing all features in the dataset</gml:description>
-        <gml:name>urn:ioos:network:ncsos:all</gml:name>
+        <gml:name>urn:ooi:network:ncsos:all</gml:name>
         <gml:srsName>EPSG::4326</gml:srsName>
         <gml:boundedBy>
           <gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
-            <gml:lowerCorner />
-            <gml:upperCorner />
+            <gml:lowerCorner>0.0 0.0</gml:lowerCorner>
+            <gml:upperCorner>0.0 0.0</gml:upperCorner>
           </gml:Envelope>
         </gml:boundedBy>
         <sos:time>
           <gml:TimePeriod>
-            <gml:beginPosition>2014-02-26T14:24:45.107Z</gml:beginPosition>
-            <gml:endPosition>2014-02-27T14:24:45.107Z</gml:endPosition>
+            <gml:beginPosition>UNKNOWN</gml:beginPosition>
+            <gml:endPosition>UNKNOWN</gml:endPosition>
           </gml:TimePeriod>
         </sos:time>
-        <sos:procedure xlink:href="urn:ioos:network:ncsos:all" />
-        <sos:observedProperty xlink:href="temp_sen" />
-        <sos:observedProperty xlink:href="density_sen" />
-        <sos:observedProperty xlink:href="salinity_sen" />
-        <sos:observedProperty xlink:href="temp_L1_sen" />
-        <sos:featureOfInterest xlink:href="urn:ioos:station:ncsos:offer1" />
+        <sos:procedure xlink:href="urn:ooi:network:ncsos:all" />
+        <sos:observedProperty xlink:href="lon_lookup" />
+        <sos:observedProperty xlink:href="lon" />
+        <sos:observedProperty xlink:href="density" />
+        <sos:observedProperty xlink:href="pressure" />
+        <sos:observedProperty xlink:href="salinity" />
+        <sos:observedProperty xlink:href="conductivity_L1" />
+        <sos:observedProperty xlink:href="time" />
+        <sos:observedProperty xlink:href="conductivity" />
+        <sos:observedProperty xlink:href="temp" />
+        <sos:observedProperty xlink:href="lat_lookup" />
+        <sos:observedProperty xlink:href="pressure_L1" />
+        <sos:observedProperty xlink:href="density_lookup" />
+        <sos:observedProperty xlink:href="lat" />
+        <sos:observedProperty xlink:href="temp_L1" />
+        <sos:featureOfInterest xlink:href="urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view" />
         <sos:responseFormat>text/xml;subtype="om/1.0.0"</sos:responseFormat>
         <sos:resultModel>om:ObservationCollection</sos:resultModel>
         <sos:responseMode>inline</sos:responseMode>
       </sos:ObservationOffering>
-      <sos:ObservationOffering gml:id="urn_ioos_station_ncsos_offer1">
-        <gml:name>urn:ioos:station:ncsos:offer1</gml:name>
+      <sos:ObservationOffering gml:id="urn_ooi_station_ncsos__de883bfde9e8498983f778dd4bf35bc3_view">
+        <gml:name>urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view</gml:name>
         <gml:srsName>EPSG::4326</gml:srsName>
         <gml:boundedBy>
           <gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
-            <gml:lowerCorner />
-            <gml:upperCorner />
+            <gml:lowerCorner>0.0 0.0</gml:lowerCorner>
+            <gml:upperCorner>0.0 0.0</gml:upperCorner>
           </gml:Envelope>
         </gml:boundedBy>
         <sos:time>
           <gml:TimePeriod>
-            <gml:beginPosition>2014-02-26T14:24:45.039Z</gml:beginPosition>
-            <gml:endPosition>2014-02-27T14:24:45.106Z</gml:endPosition>
+            <gml:beginPosition>2014-03-10T16:21:44.308-04:00</gml:beginPosition>
+            <gml:endPosition>2014-03-10T16:21:44.308-04:00</gml:endPosition>
           </gml:TimePeriod>
         </sos:time>
-        <sos:procedure xlink:href="urn:ioos:station:ncsos:offer1" />
-        <sos:observedProperty xlink:href="urn:ioos:sensor:ncsos:offer1:temp_sen" />
-        <sos:observedProperty xlink:href="urn:ioos:sensor:ncsos:offer1:density_sen" />
-        <sos:observedProperty xlink:href="urn:ioos:sensor:ncsos:offer1:salinity_sen" />
-        <sos:observedProperty xlink:href="urn:ioos:sensor:ncsos:offer1:temp_L1_sen" />
-        <sos:featureOfInterest xlink:href="urn:ioos:station:ncsos:offer1" />
+        <sos:procedure xlink:href="urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:lon_lookup" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:lon" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:density" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:pressure" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:salinity" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:conductivity_L1" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:time" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:conductivity" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:temp" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:lat_lookup" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:pressure_L1" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:density_lookup" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:lat" />
+        <sos:observedProperty xlink:href="urn:ooi:sensor:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view:temp_L1" />
+        <sos:featureOfInterest xlink:href="urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view" />
         <sos:responseFormat>text/xml;subtype="om/1.0.0"</sos:responseFormat>
         <sos:resultModel>om:ObservationCollection</sos:resultModel>
         <sos:responseMode>inline</sos:responseMode>

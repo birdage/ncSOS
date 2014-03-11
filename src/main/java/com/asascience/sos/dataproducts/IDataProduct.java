@@ -17,6 +17,8 @@ import com.asascience.ncsos.cdmclasses.iStationData;
 
 public interface IDataProduct {
 
+	public static final String SOSDirectory = "./sos_resources/properties/";
+	
 	public static final String STATION = "timeseries";
 	
 	//CAPS

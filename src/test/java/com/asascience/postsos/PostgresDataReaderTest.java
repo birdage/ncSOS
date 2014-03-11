@@ -209,9 +209,13 @@ public class PostgresDataReaderTest {
 	
 	@Test
 	public void test_SR_getData() throws Exception {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
+		
 		postgresStationData st = new postgresStationData();
 		String[] variables = {"temp"};
-		st.setParms("_9de0c6acec074ab0bdf706ed1f99f6df_view", null, variables);
+		st.setParms(table, null, variables);
 		String ret = st.createDataString(0);
 		System.out.println(ret);
 		assertNotNull(ret);
@@ -241,7 +245,7 @@ public class PostgresDataReaderTest {
 		postgresStationData st = (postgresStationData) dr.getStationData();
 		String[] variables = {"time","temp","density"};
 		String startDate = "2011-02-11T04:01:01.000Z";
-		st.setParms("_9de0c6acec074ab0bdf706ed1f99f6df_view", new String[]{startDate}, variables);
+		st.setParms(table, new String[]{startDate}, variables);
 		String ret = st.createDataString(0);
 		System.out.println(ret);
 		assertNotNull(ret);
@@ -259,7 +263,7 @@ public class PostgresDataReaderTest {
 		postgresStationData st = (postgresStationData) dr.getStationData();
 		String[] variables = {"time","temp","density"};
 		String startDate = "2011-02-11T12:01:01.000Z";
-		st.setParms("_9de0c6acec074ab0bdf706ed1f99f6df_view", new String[]{startDate}, variables);
+		st.setParms(table, new String[]{startDate}, variables);
 		String ret = st.createDataString(0);
 		System.out.println(ret);
 		assertNotNull(ret);
@@ -279,7 +283,7 @@ public class PostgresDataReaderTest {
 		String startDate = "2011-02-11T04:01:01.000Z";
 		String endDate = "2011-02-11T12:01:01.000Z";
 		
-		st.setParms("_9de0c6acec074ab0bdf706ed1f99f6df_view", new String[]{startDate,endDate}, variables);
+		st.setParms(table, new String[]{startDate,endDate}, variables);
 		
 		String ret = st.createDataString(0);
 		System.out.println(ret);

@@ -1,19 +1,18 @@
 package com.asascience.ncsos.go;
 
-import com.asascience.ncsos.cdmclasses.*;
-import com.asascience.ncsos.outputformatter.ErrorFormatter;
-import com.asascience.ncsos.outputformatter.go.Ioos10Formatter;
-import com.asascience.ncsos.outputformatter.go.OosTethysFormatter;
-import com.asascience.ncsos.service.BaseRequestHandler;
-import com.asascience.ncsos.util.ListComprehension;
-import com.asascience.sos.dataproducts.IDataProduct;
-
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import com.asascience.ncsos.cdmclasses.iStationData;
+import com.asascience.ncsos.outputformatter.ErrorFormatter;
+import com.asascience.ncsos.outputformatter.go.OosTethysFormatter;
+import com.asascience.ncsos.service.BaseRequestHandler;
+import com.asascience.ncsos.util.ListComprehension;
+import com.asascience.sos.dataproducts.IDataProduct;
 
 public class GetObservationRequestHandler extends BaseRequestHandler {
     public static final String DEPTH = "depth";
@@ -64,8 +63,6 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
         // set up our formatter
         if (responseFormat.equalsIgnoreCase(OOSTETHYS_RESPONSE_FORMAT)) {
             formatter = new OosTethysFormatter(this);
-        } else if (responseFormat.equalsIgnoreCase(IOOS10_RESPONSE_FORMAT)) {
-            formatter = new Ioos10Formatter(this);
         }else if (responseFormat.equalsIgnoreCase("text/xml")) {
         	 formatter = new OosTethysFormatter(this);
         }
@@ -135,7 +132,8 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
             checkProceduresAgainstOffering(offering);
         }
         //MAYBE?
-        obsProperties = dataset.getSensorNames(offering);
+        obsProperties = actualVariableNames;
+        //obsProperties = dataset.getSensorNames(offering);
         setCDMDatasetForStations(dataset, offering,eventTime, latLonRequest,variableNames);
     }
 
@@ -144,7 +142,7 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
         //grid operation
             if (dataset.getStationData()!=null){
             	CDMDataSet = dataset.getStationData();
-            	
+            	CDMDataSet.setNumberOfStations(1);
             }else {
                 formatter = new ErrorFormatter();
                 ((ErrorFormatter)formatter).setException("NetCDF-Java could not recognize the dataset's FeatureType");

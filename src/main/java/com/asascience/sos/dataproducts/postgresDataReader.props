@@ -1,0 +1,15 @@
+USER_AGENT=Mozilla/5.0
+server=http://localhost:5000
+station_prefix=_
+station_suffix=_view
+LAT_FIELD=lat
+TIME_FIELD=time
+LON_FIELD =lon
+SessionStartup=select runCovTest()
+NOMINAL_DATETIME=nominal_datetime
+GEOSPATIAL_BOUNDS=geospatial_bounds
+DBNAME=postgres
+DBUSERNAME=rpsdev
+DBPASS=
+DBSERVER=localhost
+DBPORT=5432

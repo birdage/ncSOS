@@ -19,7 +19,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-import com.asascience.ncsos.cdmclasses.TimeSeries;
 import com.asascience.ncsos.cdmclasses.baseCDMClass;
 import com.asascience.ncsos.cdmclasses.iStationData;
 
@@ -133,7 +132,7 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 			}
 
 		} catch (Exception ex) {
-			Logger.getLogger(TimeSeries.class.getName()).log(Level.SEVERE,
+			Logger.getLogger(postgresStationData.class.getName()).log(Level.SEVERE,
 					null, ex);
 			return DATA_RESPONSE_ERROR + postgresStationData.class;
 		}finally{
@@ -159,8 +158,8 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 		
 	}
 
-	public String getDateTypes_CMD(){
-		String sqlcmd = "select column_name, data_type from information_schema.columns where table_name = '_9de0c6acec074ab0bdf706ed1f99f6df_view';";
+	public String getDataTypes_CMD(String table){
+		String sqlcmd = "select column_name, data_type from information_schema.columns where table_name = '"+table+"';";
 		return sqlcmd;
 	}
 	
@@ -168,7 +167,7 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 		String sqlcmd ="select ";
 		
 		for (int i = 0; i < variableNames.length; i++) {
-			sqlcmd+=variableNames[i];
+			sqlcmd+="\""+variableNames[i]+"\"";
 			if (i< variableNames.length-1){
 				sqlcmd+= ",";
 			}
@@ -233,7 +232,7 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 				}
 			}
 			//line ending
-			builder.append(" ");
+			builder.append(";");
 		} 
 		rs.close();
 	}

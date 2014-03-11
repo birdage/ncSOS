@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -60,14 +61,17 @@ public class GC_Test {
 	}
 
 	@Test
-	public void testGenerateSimpleGETCAPSRequest() throws IOException {
-		fail();
+	public void testGenerateSimpleGETCAPSRequest() throws IOException, SQLException {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.closeFile();
+		
 		String tempdir = System.getProperty("java.io.tmpdir");
 
 		Parser md = new Parser();
 		IDataProduct dataset = new SampleDataReader();
 
-		String request = "request=getCapabilities&service=sos&version=1.0.0&offering=offer1";
+		String request = "request=getCapabilities&service=sos&version=1.0.0&offering="+table;
 
 		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
 				request, "eoi-dev1.oceanobservatories.org" + "?".toString(),
@@ -82,15 +86,28 @@ public class GC_Test {
 		
 	}
 	
+	public String grabFDT(PostgresDataReader dr) throws SQLException{
+		String[] views = dr.getStringArray(dr.makeSqlRequest(dr.getAllFDTViews_CMD()));
+		//only perform the following if there are views we can use
+		if (views.length>0){
+			return views[0];
+		}
+		return null;
+	}
+	
 	@Test
-	public void testGenerateSimpleGETOBSRequest() throws IOException {
+	public void testGenerateSimpleGETOBSRequest() throws IOException, SQLException {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.closeFile();
+		
 		
 		String tempdir = System.getProperty("java.io.tmpdir");
 
 		Parser md = new Parser();
 		IDataProduct dataset = new PostgresDataReader();
 
-		String request = "request=getObservation&service=sos&version=1.0.0&offering=_9de0c6acec074ab0bdf706ed1f99f6df_view&observedproperty=temp&responseformat=text/xml";
+		String request = "request=getObservation&service=sos&version=1.0.0&offering="+table+"&observedproperty=time,temp,density&responseformat=text/xml";
 
 		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
 				request, "http://localhost:8080/geoserver/ows/" + "?".toString(),
@@ -120,11 +137,15 @@ public class GC_Test {
 	
 	@Test
 	public void test_postgresExample() throws Exception {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.closeFile();
+		
 		String tempdir = System.getProperty("java.io.tmpdir");
 
 		Parser md = new Parser();
 		IDataProduct dataset = new PostgresDataReader();
-		String request = "request=getCapabilities&service=sos&version=1.0.0&offering=_9de0c6acec074ab0bdf706ed1f99f6df_view";
+		String request = "request=getCapabilities&service=sos&version=1.0.0&offering="+table+"";
 
 		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
 				request, "eoi-dev1.oceanobservatories.org" + "?".toString(),

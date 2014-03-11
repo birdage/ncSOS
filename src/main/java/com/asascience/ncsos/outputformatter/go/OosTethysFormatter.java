@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class OosTethysFormatter extends BaseOutputFormatter {
 
-    private static final String TEMPLATE = "templates/GO_oostethys.xml";
+    private static final String TEMPLATE = "/Users/rpsdev/Documents/workspace/postSOS/resources/templates/GO_oostethys.xml";
     private static final String OBSERVATION = "Observation";
     private static final String MMI_CF = "http://mmisw.org/ont/cf/parameter/";
     private static final String BLOCK_SEPERATOR = " ";
@@ -100,6 +100,7 @@ public class OosTethysFormatter extends BaseOutputFormatter {
         parent.addContent(createNodeWithAttribute(OM_NS, PROCEDURE, XLINK_NS, "href", procName));
         // add each of the observed properties we are looking for
         for (String obs : this.handler.getObservedProperties()) {
+        	
             // don't add height/depth vars; lat & lon
             if (!obs.equalsIgnoreCase("alt") && !obs.equalsIgnoreCase("height") && !obs.equalsIgnoreCase("z") && !obs.equalsIgnoreCase("lat") && !obs.equalsIgnoreCase("lon"))
                 parent.addContent(createNodeWithAttribute(OM_NS, OBSERVED_PROPERTY, XLINK_NS, "href", obs));
@@ -219,8 +220,7 @@ public class OosTethysFormatter extends BaseOutputFormatter {
         dataArray.addContent(getEncodingElement());
         
 //        dataArray.appendChild(createNodeWithText("swe:values", obsHandler.getValueBlockForAllObs(BLOCK_SEPERATOR, DECIMAL_SEPERATOR, TOKEN_SEPERATOR, index)));
-        dataArray.addContent(createNodeWithText(SWE_NS, "values",
-                processDataBlock(this.handler.getValueBlockForAllObs(BLOCK_SEPERATOR, DECIMAL_SEPERATOR, TOKEN_SEPERATOR, index))));
+        dataArray.addContent(createNodeWithText(SWE_NS, "values",processDataBlock(this.handler.getValueBlockForAllObs(BLOCK_SEPERATOR, DECIMAL_SEPERATOR, TOKEN_SEPERATOR, index))));
         
         parent.addContent(dataArray);
         
@@ -229,6 +229,8 @@ public class OosTethysFormatter extends BaseOutputFormatter {
     
     private String processDataBlock(String dataBlock) {
         // split on token separator then on '='
+    	return dataBlock;
+    	/*
         StringBuilder retval = new StringBuilder();
         String[] blockSplit = dataBlock.split(BLOCK_SEPERATOR);
         for (String block : blockSplit) {
@@ -249,6 +251,7 @@ public class OosTethysFormatter extends BaseOutputFormatter {
                 retval.deleteCharAt(retval.length()-1);
         
         return retval.toString();
+        */
     }
     
     private boolean isInRequestObservedProperties(String name) {

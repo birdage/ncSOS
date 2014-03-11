@@ -1,8 +1,13 @@
 package com.asascience.sos.dataproducts;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,10 +16,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -36,26 +41,32 @@ import com.asascience.ncsos.cdmclasses.iStationData;
 @SuppressWarnings("unused")
 public class PostgresDataReader implements IDataProduct {
 
-	private static final String GATEWAY_RESPONSE_JSON_NODE = "GatewayResponse";
-	private static final String DATA_JSON_NODE = "data";
-	private static final String NOMINAL_DATETIME = "nominal_datetime";
-	private static final String GEOSPATIAL_BOUNDS = "geospatial_bounds";
-	private static final String DBNAME = "postgres";
-	private static final String DBUSERNAME = "rpsdev";
-	private static final String DBPASS = "";
-	private static final String DBSERVER = "localhost";
-	private static final String DBPORT = "5432";
-	private static final String TITLE = "-------- PostgreSQL JDBC Connection Testing ------------";
-	private static final String CONNECTION_PASSED = "Connection working...";
+	/**
+	 * set from properties file
+	 */
+	private String station_prefix = null;
+	private String station_suffix = null;
+	private String USER_AGENT = null;
+	private String server = null;
+	private String LAT_FIELD = null;
+	private String TIME_FIELD = null;
+	private String LON_FIELD = null;
+	private String SessionStartup = null;
+	private String GATEWAY_RESPONSE_JSON_NODE = "GatewayResponse";
+	private String DATA_JSON_NODE = "data";
+	private String NOMINAL_DATETIME = null;
+	private String GEOSPATIAL_BOUNDS = null;
+	private String DBNAME = null;
+	private String DBUSERNAME = null;
+	private String DBPASS = null;
+	private String DBSERVER = null;
+	private String DBPORT = null;
+	private String TITLE = "-------- PostgreSQL JDBC Connection Testing ------------";
+	private String CONNECTION_PASSED = "Connection working...";
 	
-	private static final String LAT_FIELD = "lat";
-	private static final String TIME_FIELD = "time";
-	private static final String LON_FIELD = "lon";
-	private static final String OOI_PREFIX = "_";
-	private static final String OOI_SUFFIX = "_view";
-	
-	private static final String SessionStartup = "select runCovTest()";
-	
+	/**
+	 * 
+	 */
 	public DateTime startDateTime = null;
 	public DateTime endDateTime = null;
 	
@@ -82,19 +93,51 @@ public class PostgresDataReader implements IDataProduct {
 	//is basically a mapping Station->Hash of param then unit
 	//Station:Param:unit
 	public HashMap<String, HashMap<String, String>> unitList = new HashMap<String, HashMap<String,String>>();
-	
-	
-	private final String USER_AGENT = "Mozilla/5.0";
 	private List<String> sensorList;
-	private static final String server = "http://localhost:5000"; 
-	
+
+	/**
+	 * properties file
+	 */
+	Properties prop = new Properties();
+	InputStream input = null;
+	public static final String propertyFileName = "postgresDataReader.props";
 	
 	
 	public PostgresDataReader() {
 		// setup new connection to DB
+		parseProperties();
 		setupConnection();
 	}
 
+	private void parseProperties(){
+		try {
+			 File currentDirectory = new File(new File(SOSDirectory+propertyFileName).getAbsolutePath());
+		    //System.out.println();
+			input = new FileInputStream(currentDirectory.getAbsolutePath());
+			// load a properties file
+			prop.load(input);
+			this.USER_AGENT = prop.getProperty("USER_AGENT");
+			this.server = prop.getProperty("server");
+			this.station_prefix = prop.getProperty("station_prefix");
+			this.station_suffix = prop.getProperty("station_suffix");
+			this.LAT_FIELD = prop.getProperty("LAT_FIELD");
+			this.TIME_FIELD = prop.getProperty("TIME_FIELD");
+			this.LON_FIELD = prop.getProperty("LON_FIELD");
+			this.SessionStartup = prop.getProperty("SessionStartup");
+			this.NOMINAL_DATETIME = prop.getProperty("NOMINAL_DATETIME");
+			this.GEOSPATIAL_BOUNDS = prop.getProperty("GEOSPATIAL_BOUNDS");
+			this.DBNAME = prop.getProperty("DBNAME");
+			this.DBUSERNAME = prop.getProperty("DBUSERNAME");
+			this.DBPASS = prop.getProperty("DBPASS");
+			this.DBSERVER = prop.getProperty("DBSERVER");
+			this.DBPORT = prop.getProperty("DBPORT");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void setup() {
 		// check that the data is setup
 		try {
@@ -428,11 +471,11 @@ public class PostgresDataReader implements IDataProduct {
 	}
 	
 	/**
-	 * SQL String uses the {@link PostgresDataReader#OOI_SUFFIX} to get the views
+	 * SQL String uses the {@link PostgresDataReader#station_suffix} to get the views
 	 * @return
 	 */
 	public String getAllFDTViews_CMD() {
-		String sqlcmd = "SELECT viewname FROM pg_catalog.pg_views where schemaname='public' and viewname like \'%"+OOI_SUFFIX+"\';";
+		String sqlcmd = "SELECT viewname FROM pg_catalog.pg_views where schemaname='public' and viewname like \'%"+station_suffix+"\';";
 		return sqlcmd;
 	}
 	
@@ -612,6 +655,22 @@ public class PostgresDataReader implements IDataProduct {
 			return false;
 		}
 	}
+	
+	/**
+	 * close all the stuff down
+	 */
+	public boolean closeFile() {
+		try {
+			rs.close();
+			st.close();
+			connection.close();
+			return true;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 	public String findFeatureType(String offering) {
 		return "";
@@ -653,7 +712,12 @@ public class PostgresDataReader implements IDataProduct {
 	}
 
 	public String getUnitsOfVariable(String offering, String variable) {
-		return unitList.get(offering).get(variable);
+		if (offering == null) {
+			return unitList.get(requestedOfferingList.get(0).substring(1,requestedOfferingList.get(0).length()-5)).get(variable);
+
+		} else {
+			return unitList.get(offering).get(variable);
+		}
 	}
 
 	public String[] getSensorNames(String offering) {

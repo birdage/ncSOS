@@ -199,17 +199,11 @@ public class Parser {
 					obsHandler.parseObservations();
 
 					// add our handler to the return value
-					retval.put(OUTPUT_FORMATTER,
-							obsHandler.getOutputFormatter());
+					retval.put(OUTPUT_FORMATTER,obsHandler.getOutputFormatter());
 				} catch (Exception ex) {
-					_log.error(
-							"Internal Error in creating output for GetObservation request:",
-							ex);
-					errorHandler
-							.setException("Internal Error in creating output for GetObservation request - "
-									+ ex.toString());
-					retval.put(OUTPUT_FORMATTER,
-							errorHandler.getOutputFormatter());
+					_log.error("Internal Error in creating output for GetObservation request:",ex);
+					errorHandler.setException("Internal Error in creating output for GetObservation request - "+ ex.toString());
+					retval.put(OUTPUT_FORMATTER,errorHandler.getOutputFormatter());
 				}
 			} else {
 				// return a 'not supported' error
