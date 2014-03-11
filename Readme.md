@@ -7,7 +7,7 @@ Current Stable version of SOS used: **RC8**
 * started abstracting the dataset through an interface, de-coupled the majority of the getCaps NC calls to function calls.
 
 ## Installing postSOS
-* grab a release from the github page [here](https://github.com/birdage/ncSOS/releases/download/1.0.0/postSOS-1.0.0.zip) or to view all the available releases go [here](https://github.com/birdage/ncSOS/releases)
+* grab a release from the github page [here](https://github.com/birdage/ncSOS/releases/download/postsos-1.0.0/postSOS-1.0.0.zip) or to view all the available releases go [here](https://github.com/birdage/ncSOS/releases)
 * move zip file to ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
 * ```cd``` to ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
 * unzip/deflate zip file (i.e ```unzip postSOS-1.0.0.zip```)
