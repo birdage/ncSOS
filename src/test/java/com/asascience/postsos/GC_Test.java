@@ -86,6 +86,32 @@ public class GC_Test {
 		
 	}
 	
+	@Test
+	public void testGenerateSimpleGETCAPSRequest_fails() throws IOException, SQLException {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.closeFile();
+		
+		String tempdir = System.getProperty("java.io.tmpdir");
+
+		Parser md = new Parser();
+		IDataProduct dataset = new SampleDataReader();
+
+		String request = "request=getCapabilities&service=sos";
+
+		HashMap<String, Object> respMap = md.enhanceGETRequest(dataset,
+				request, "eoi-dev1.oceanobservatories.org" + "?".toString(),
+				tempdir);
+		
+		OutputFormatter output = (OutputFormatter) respMap.get("outputFormatter");
+		Writer writer = new CharArrayWriter();
+		output.writeOutput(writer);
+		 // Write to disk
+        System.out.println("------ Saving output: " + output +" ------");
+        fileWriter("/Users/rpsdev/Documents/workspace/postSOS/examples/post_Get_caps_fails.xml", writer,false);
+		
+	}
+	
 	public String grabFDT(PostgresDataReader dr) throws SQLException{
 		String[] views = dr.getStringArray(dr.makeSqlRequest(dr.getAllFDTViews_CMD()));
 		//only perform the following if there are views we can use

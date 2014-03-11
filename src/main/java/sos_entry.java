@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
@@ -6,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.asascience.ncsos.outputformatter.BaseOutputFormatter;
 import com.asascience.ncsos.outputformatter.OutputFormatter;
 import com.asascience.ncsos.service.Parser;
 import com.asascience.sos.dataproducts.PostgresDataReader;
@@ -31,7 +33,10 @@ public class sos_entry {
 
 	public void processRequest(HttpServletRequest req, HttpServletResponse res) {
 		respMap = new HashMap<String, Object>();
-
+		
+		File currentDirectory = new File(new File(BaseOutputFormatter.SOSDirectory).getAbsolutePath());
+		_log.info("SOS:ROOT DIRECTORY:"+currentDirectory.getAbsolutePath());
+		
 		try {
 			// see http://tomcat.apache.org/tomcat-5.5-doc/config/context.html
 			String tempdir = System.getProperty("java.io.tmpdir");

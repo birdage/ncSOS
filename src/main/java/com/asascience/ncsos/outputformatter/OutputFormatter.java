@@ -108,9 +108,9 @@ public abstract class OutputFormatter {
     	this.initNamespaces();
     }
 
-     public Element getRoot() {
-        return this.document.getRootElement();
-    }
+	public Element getRoot() {
+		return this.document.getRootElement();
+	}
 
     protected void initNamespaces() {
         this.namespaces = new HashMap<String, Namespace>();
