@@ -211,7 +211,8 @@ public class PostgresDataReader implements IDataProduct {
  					break;
 				} catch (Exception e) {
 					//DAMN DIDNT FIND IT
-				e.printStackTrace();
+					_log.error("POSTGRES READER:"+e.getMessage());
+					e.printStackTrace();
 				}
 			}
 			
@@ -298,6 +299,8 @@ public class PostgresDataReader implements IDataProduct {
 				result.append(line);
 			}
 			return result.toString();
+		}else{
+			_log.error("POSTGRES READER:"+"could not get data from RR");
 		}
 		post.releaseConnection();
 		client.close();
@@ -339,6 +342,7 @@ public class PostgresDataReader implements IDataProduct {
 						// JSONObject d
 						// =actualParamObject.getJSONObject("param_type");
 					} catch (Exception e) {
+						_log.error("POSTGRES READER:"+"invalid results from RR");
 						unitHash.put(param, "unknown");
 					}
 	
@@ -346,6 +350,8 @@ public class PostgresDataReader implements IDataProduct {
 			}
 			// finally add the units to the main hash
 			unitList.put(offering, unitHash);
+		}else{
+			_log.error("POSTGRES READER:"+"could not get result RR");
 		}
 		
 	}
@@ -390,9 +396,11 @@ public class PostgresDataReader implements IDataProduct {
 				rs.close();
 							
 			} catch (SQLException e) {
+				_log.warn("POSTGRES READER:"+"using blank lat lon");
 				this.latLonRects.put(id, new LatLonRect(Double.NaN, Double.NaN, Double.NaN, Double.NaN));
 				e.printStackTrace();
 			}catch (IndexOutOfBoundsException e) {
+				_log.warn("POSTGRES READER:"+"using blank lat lon");
 				this.latLonRects.put(id, new LatLonRect(Double.NaN, Double.NaN, Double.NaN, Double.NaN));
 				e.printStackTrace();
 			}
@@ -525,7 +533,7 @@ public class PostgresDataReader implements IDataProduct {
 			rs.close();
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			_log.error("POSTGRES READER:"+"error creating double array:"+e.getMessage());
 			e.printStackTrace();
 		}
 		
@@ -549,7 +557,7 @@ public class PostgresDataReader implements IDataProduct {
 			
 			ret = list.toArray(new String[list.size()]);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			_log.error("POSTGRES READER:"+"error creating string array:"+e.getMessage());
 			e.printStackTrace();
 		}
 		
@@ -575,6 +583,7 @@ public class PostgresDataReader implements IDataProduct {
 			Class.forName("org.postgresql.Driver");
 
 		} catch (ClassNotFoundException e) {
+			_log.error("POSTGRES READER:"+"CANNOT LOAD POSTGRES DRIVE!:"+e.getMessage());
 			System.out.println("Where is your PostgreSQL JDBC Driver? "+ "Include in your library path!");
 			e.printStackTrace();
 			return;
@@ -590,7 +599,7 @@ public class PostgresDataReader implements IDataProduct {
 					DBPASS);
 
 		} catch (SQLException e) {
-
+			_log.error("POSTGRES READER:"+"Connection Failed:"+e.getMessage());
 			System.out.println("Connection Failed! Check output console");
 			e.printStackTrace();
 			return;
@@ -600,6 +609,7 @@ public class PostgresDataReader implements IDataProduct {
 		if (connection != null) {
 			System.out.println(CONNECTION_PASSED);
 		} else {
+			_log.error("POSTGRES READER:"+"failed to make connection");
 			System.out.println("Failed to make connection!");
 		}
 	}
@@ -612,9 +622,7 @@ public class PostgresDataReader implements IDataProduct {
 			this.requestedOfferings = (String[]) object;
 		} else if (object instanceof String) {
 			this.requestedOfferings = new String[] { object.toString() };
-
 		}
-
 	}
 
 	/**
@@ -655,7 +663,7 @@ public class PostgresDataReader implements IDataProduct {
 			connection.close();
 			return true;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			_log.error("POSTGRES READER:"+"Could not close connection, Failed!:"+e.getMessage());
 			e.printStackTrace();
 			return false;
 		}
@@ -671,7 +679,7 @@ public class PostgresDataReader implements IDataProduct {
 			connection.close();
 			return true;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			_log.error("POSTGRES READER:"+"Could not close connection, Failed!:"+e.getMessage());
 			e.printStackTrace();
 			return false;
 		}
@@ -710,7 +718,7 @@ public class PostgresDataReader implements IDataProduct {
 		try {
 			return getStringArray(makeSqlRequest(getTableFields_CMD(offering)));
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			_log.error("POSTGRES READER:"+"Could not get variables:"+e.getMessage());
 			e.printStackTrace();
 		}
 		return new String[]{};
@@ -729,7 +737,7 @@ public class PostgresDataReader implements IDataProduct {
 		try {
 			getStringArray(makeSqlRequest(getTableFields_CMD(offering)));
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			_log.error("POSTGRES READER:"+"Could not get sensornames/variables:"+e.getMessage());
 			e.printStackTrace();
 		}
 		return new String[]{};

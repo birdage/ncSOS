@@ -164,8 +164,8 @@
         </gml:boundedBy>
         <sos:time>
           <gml:TimePeriod>
-            <gml:beginPosition>2014-03-11T14:50:10.715-04:00</gml:beginPosition>
-            <gml:endPosition>2014-03-11T14:50:10.715-04:00</gml:endPosition>
+            <gml:beginPosition>2014-03-11T17:05:32.122-04:00</gml:beginPosition>
+            <gml:endPosition>2014-03-11T17:05:32.122-04:00</gml:endPosition>
           </gml:TimePeriod>
         </sos:time>
         <sos:procedure xlink:href="urn:ooi:station:postsos:_de883bfde9e8498983f778dd4bf35bc3_view" />

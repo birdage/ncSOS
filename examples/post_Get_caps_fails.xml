@@ -119,8 +119,8 @@
         </gml:boundedBy>
         <sos:time>
           <gml:TimePeriod>
-            <gml:beginPosition>2014-03-10T14:50:10.770-04:00</gml:beginPosition>
-            <gml:endPosition>2014-03-11T14:50:10.770-04:00</gml:endPosition>
+            <gml:beginPosition>2014-03-10T17:05:32.175-04:00</gml:beginPosition>
+            <gml:endPosition>2014-03-11T17:05:32.175-04:00</gml:endPosition>
           </gml:TimePeriod>
         </sos:time>
         <sos:procedure xlink:href="urn:ooi:network:postsos:all" />
@@ -144,8 +144,8 @@
         </gml:boundedBy>
         <sos:time>
           <gml:TimePeriod>
-            <gml:beginPosition>2014-03-10T14:50:10.770-04:00</gml:beginPosition>
-            <gml:endPosition>2014-03-11T14:50:10.770-04:00</gml:endPosition>
+            <gml:beginPosition>2014-03-10T17:05:32.175-04:00</gml:beginPosition>
+            <gml:endPosition>2014-03-11T17:05:32.175-04:00</gml:endPosition>
           </gml:TimePeriod>
         </sos:time>
         <sos:procedure xlink:href="urn:ooi:station:postsos:offer1" />
