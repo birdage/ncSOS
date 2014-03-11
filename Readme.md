@@ -29,7 +29,7 @@ Current Stable version of SOS used: **RC8**
 use either the ```build.sh``` script or do the following
 * generate zip file, but first remove the existing one ```rm ./release/postSOS-1.0.0.zip```
 * grab current jar file ```zip  -j ./release/postSOS-1.0.0.zip ./target/postSOS-1.0.jar```  
-* grab current resources and update zip file ```zip  ./release/postSOS-1.0.0.zip ./sos_resources/*```
+* grab current resources and update zip file ```zip -r ./release/postSOS-1.0.0.zip ./sos_resources/*```
 * grab required dependancies ```zip -j ./release/postSOS-1.0.0.zip ./jar/*```
 
 
