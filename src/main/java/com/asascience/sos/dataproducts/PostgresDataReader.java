@@ -111,7 +111,7 @@ public class PostgresDataReader implements IDataProduct {
 
 	private void parseProperties(){
 		try {
-			 File currentDirectory = new File(new File(SOSDirectory+propertyFileName).getAbsolutePath());
+		    File currentDirectory = new File(new File(SOSDirectory+propertyFileName).getAbsolutePath());
 		    //System.out.println();
 			input = new FileInputStream(currentDirectory.getAbsolutePath());
 			// load a properties file
