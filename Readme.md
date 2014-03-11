@@ -9,7 +9,8 @@ Current Stable version of SOS used: **RC8**
 ## install
 * grab a release from the github page *link *.zip
 * move zip file to ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
-* unzip/deflate zip file (i.e ```uzip```)
+* ```cd``` to ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
+* unzip/deflate zip file (i.e ```unzip postSOS-1.0.0.zip```)
 
 ### check the following
 * postSOS-1.0.jar should be visible in ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
@@ -22,8 +23,10 @@ Current Stable version of SOS used: **RC8**
 ## building
 * pull down source
 * in eclipse right click on project select maven > maven install
-* this will build out the project and the resources needed to sos_resources
+* this will build out the project and the resources needed to ```sos_resources```
 * cd to postsos root project directory
+
+use either the ```build.sh``` script or do the following
 * generate zip file, but first remove the existing one ```rm ./release/postSOS-1.0.0.zip```
 * grab current jar file ```zip  -j ./release/postSOS-1.0.0.zip ./target/postSOS-1.0.jar```  
 * grab current resources and update zip file ```zip  ./release/postSOS-1.0.0.zip ./sos_resources/*```
