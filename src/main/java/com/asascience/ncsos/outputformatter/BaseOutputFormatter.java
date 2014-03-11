@@ -12,7 +12,7 @@ import java.io.Writer;
 
 public class BaseOutputFormatter extends OutputFormatter {
 
-	public static final String SOSDirectory = "./sos_resources/";
+	public static final String SOSDirectory = "/sos_resources/";
     protected boolean hasError;
 
     public BaseOutputFormatter() {
