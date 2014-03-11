@@ -48,7 +48,9 @@ public class GetObservationRequestHandler extends BaseRequestHandler {
                                         String[] eventTime,
                                         String responseFormat,
                                         Map<String, String> latLonRequest) throws IOException {
+    	
         super(dataset);
+        _log.warn("SOS GETOBSERVATION HANDLER");
 
         // Translate back to an URN.  (gml:id fields in XML can't have colons)
         offering = offering.replace("_-_",":");

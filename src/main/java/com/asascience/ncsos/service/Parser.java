@@ -144,6 +144,7 @@ public class Parser {
 			dataset.setup();
 			
 			if (request.equalsIgnoreCase(GETCAPABILITIES)) {
+				_log.warn("SOS GETCAPABILITIES");
 				GetCapabilitiesRequestHandler capHandler = null;
 				String sections = "all";
 				if (queryParameters.containsKey(SECTIONS)) {
@@ -156,15 +157,17 @@ public class Parser {
 					_log.error(ex.getMessage(), ex);
 					capHandler = null;
 				}
-
+				
 				if (capHandler != null) {
 					parseGetCaps(capHandler);
 					retval.put(OUTPUT_FORMATTER,capHandler.getOutputFormatter());
 				} else if (!retval.containsKey(OUTPUT_FORMATTER)) {
+					_log.error("null handler");
 					errorHandler.setException("Internal Error in preparing output for GetCapabilities request, received null handler.");
 					retval.put(OUTPUT_FORMATTER,errorHandler.getOutputFormatter());
 				}
 			} else if (request.equalsIgnoreCase(GETOBSERVATION)) {
+				_log.warn("SOS GETOBSERVATION");
 				GetObservationRequestHandler obsHandler = null;
 				// setup our coordsHash
 				if (queryParameters.containsKey(LAT)) {
@@ -228,8 +231,7 @@ public class Parser {
 		return retval;
 	}
 
-	private void parseGetCaps(GetCapabilitiesRequestHandler capHandler)
-			throws IOException {
+	private void parseGetCaps(GetCapabilitiesRequestHandler capHandler) throws IOException {
 		// do our parsing
 		capHandler.parseGetCapabilitiesDocument();
 	}

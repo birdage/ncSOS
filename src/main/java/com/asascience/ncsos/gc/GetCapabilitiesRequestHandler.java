@@ -52,6 +52,7 @@ public class GetCapabilitiesRequestHandler extends BaseRequestHandler {
      */
     public GetCapabilitiesRequestHandler(IDataProduct dataset, String threddsURI, String sections) throws IOException {
         super(dataset);
+        _log.warn("SOS GETCAPABILITIES HANDLER");
         this.threddsURI = threddsURI;
         this.sections = sections.toLowerCase();
         this.formatter = new GetCapsFormatter(this);
@@ -69,6 +70,7 @@ public class GetCapabilitiesRequestHandler extends BaseRequestHandler {
      * Creates the output for the get capabilities response
      */
     public void parseGetCapabilitiesDocument() {
+    	_log.warn("parseGetCapabilitiesDocument");
         // early exit if we have an exception output
         if (formatter instanceof ErrorFormatter) {
             return;

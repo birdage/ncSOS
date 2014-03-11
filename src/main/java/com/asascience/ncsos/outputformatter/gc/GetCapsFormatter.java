@@ -23,6 +23,7 @@ import com.asascience.sos.dataproducts.LatLonRect;
  */
 public class GetCapsFormatter extends BaseOutputFormatter {
 
+	private org.slf4j.Logger _log = org.slf4j.LoggerFactory.getLogger(GetObservationRequestHandler.class);
     public static final String CONTENTS = "Contents";
     public static final String EPSG4326 = "EPSG::4326";
     public static final String HTTP = "HTTP";
@@ -35,6 +36,7 @@ public class GetCapsFormatter extends BaseOutputFormatter {
 
     public GetCapsFormatter(GetCapabilitiesRequestHandler handler) {
         super();
+        _log.warn("SOS GETCAPABIITIES FORMATTER");
         this.handler = handler;
     }
 

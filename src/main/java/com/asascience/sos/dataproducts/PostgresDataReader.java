@@ -342,7 +342,7 @@ public class PostgresDataReader implements IDataProduct {
 						// JSONObject d
 						// =actualParamObject.getJSONObject("param_type");
 					} catch (Exception e) {
-						_log.error("POSTGRES READER:"+"invalid results from RR");
+						_log.error("POSTGRES READER:"+"invalid results from RR:"+e.getMessage());
 						unitHash.put(param, "unknown");
 					}
 	
