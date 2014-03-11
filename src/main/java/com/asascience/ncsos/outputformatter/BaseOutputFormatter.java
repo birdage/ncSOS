@@ -1,6 +1,7 @@
 package com.asascience.ncsos.outputformatter;
 
 import com.asascience.ncsos.util.XMLDomUtils;
+
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.Format;
@@ -11,6 +12,7 @@ import java.io.Writer;
 
 public class BaseOutputFormatter extends OutputFormatter {
 
+	public static final String SOSDirectory = "./sos_resources/";
     protected boolean hasError;
 
     public BaseOutputFormatter() {

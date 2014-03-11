@@ -2,16 +2,18 @@ package com.asascience.ncsos.outputformatter.go;
 
 import com.asascience.ncsos.go.GetObservationRequestHandler;
 import com.asascience.ncsos.outputformatter.BaseOutputFormatter;
+
 import org.jdom.Element;
 import org.jdom.Namespace;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 
 public class OosTethysFormatter extends BaseOutputFormatter {
 
-    private static final String TEMPLATE = "/Users/rpsdev/Documents/workspace/postSOS/resources/templates/GO_oostethys.xml";
+    private static final String TEMPLATE = "templates/GO_oostethys.xml";
     private static final String OBSERVATION = "Observation";
     private static final String MMI_CF = "http://mmisw.org/ont/cf/parameter/";
     private static final String BLOCK_SEPERATOR = " ";
@@ -38,7 +40,8 @@ public class OosTethysFormatter extends BaseOutputFormatter {
     }
 
     public String getTemplateLocation() {
-        return TEMPLATE;
+    	File currentDirectory = new File(new File(SOSDirectory+TEMPLATE).getAbsolutePath());
+    	return currentDirectory.getAbsolutePath();
     }
 
     public void writeOutput(Writer writer) throws IOException {

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.ncsos.cdmclasses;
 
 import org.joda.time.Chronology;

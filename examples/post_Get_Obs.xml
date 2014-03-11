@@ -25,11 +25,11 @@
           <gml:endPosition />
         </gml:TimePeriod>
       </om:samplingTime>
-      <om:procedure xlink:href="urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view" />
+      <om:procedure xlink:href="urn:ooi:station:postsos:_de883bfde9e8498983f778dd4bf35bc3_view" />
       <om:observedProperty xlink:href="time" />
       <om:observedProperty xlink:href="temp" />
       <om:observedProperty xlink:href="density" />
-      <om:featureOfInterest xlink:href="urn:ooi:station:ncsos:_de883bfde9e8498983f778dd4bf35bc3_view" />
+      <om:featureOfInterest xlink:href="urn:ooi:station:postsos:_de883bfde9e8498983f778dd4bf35bc3_view" />
       <om:result>
         <om:DataArray>
           <swe:elementCount>

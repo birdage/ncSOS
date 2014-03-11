@@ -21,7 +21,7 @@ public abstract class BaseRequestHandler {
 	public static final String STATION_URN_BASE = "urn:ooi:station:";
 	public static final String SENSOR_URN_BASE = "urn:ooi:sensor:";
 	public static final String NETWORK_URN_BASE = "urn:ooi:network:";
-	public static final String DEFAULT_NAMING_AUTHORITY = "ncsos";
+	public static final String DEFAULT_NAMING_AUTHORITY = "postsos";
 	private static final NumberFormat FORMAT_DEGREE;
 	// list of keywords to filter variables on to remove non-data variables from
 	// the list

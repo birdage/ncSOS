@@ -1,19 +1,23 @@
 package com.asascience.ncsos.outputformatter;
 
+import java.io.File;
+
 import org.jdom.Element;
 import org.jdom.Namespace;
 
 public class ErrorFormatter extends BaseOutputFormatter {
 
-    private final static String TEMPLATE = "/Users/rpsdev/Documents/workspace/postSOS/resources/templates/exception.xml";
+	private final static String TEMPLATE = "templates/exception.xml";
 
+	
     public ErrorFormatter() {
         super();
     }
 
     @Override
     protected String getTemplateLocation() {
-        return TEMPLATE;
+    	File currentDirectory = new File(new File(SOSDirectory+TEMPLATE).getAbsolutePath());
+    	return currentDirectory.getAbsolutePath();
     }
     
     public void setException(String exceptionMessage) {

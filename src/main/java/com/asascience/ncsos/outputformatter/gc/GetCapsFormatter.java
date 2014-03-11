@@ -4,6 +4,8 @@
  */
 package com.asascience.ncsos.outputformatter.gc;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,7 +30,7 @@ public class GetCapsFormatter extends BaseOutputFormatter {
     public static final String SERVICE_IDENTIFICATION = "ServiceIdentification";
     public static final String SERVICE_PROVIDER = "ServiceProvider";
     private boolean exceptionFlag = false;
-    private final static String TEMPLATE = "/Users/rpsdev/Documents/workspace/postSOS/resources/templates/GC.xml";
+    private final static String TEMPLATE = "templates/GC.xml";
     private GetCapabilitiesRequestHandler handler = null;
 
     public GetCapsFormatter(GetCapabilitiesRequestHandler handler) {
@@ -38,7 +40,8 @@ public class GetCapsFormatter extends BaseOutputFormatter {
 
     @Override
     protected String getTemplateLocation() {
-        return TEMPLATE;
+    	File currentDirectory = new File(new File(SOSDirectory+TEMPLATE).getAbsolutePath());
+    	return currentDirectory.getAbsolutePath();
     }
 
     public void parseServiceIdentification(HashMap<String, Object> attrs) {
