@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -41,6 +40,8 @@ import com.asascience.ncsos.cdmclasses.iStationData;
 @SuppressWarnings("unused")
 public class PostgresDataReader implements IDataProduct {
 
+	private static org.slf4j.Logger _log = org.slf4j.LoggerFactory.getLogger(PostgresDataReader.class);
+	
 	/**
 	 * set from properties file
 	 */
@@ -104,6 +105,7 @@ public class PostgresDataReader implements IDataProduct {
 	
 	
 	public PostgresDataReader() {
+		_log.info("using postgres data reader");
 		// setup new connection to DB
 		parseProperties();
 		setupConnection();
@@ -131,6 +133,7 @@ public class PostgresDataReader implements IDataProduct {
 			this.DBPASS = prop.getProperty("DBPASS");
 			this.DBSERVER = prop.getProperty("DBSERVER");
 			this.DBPORT = prop.getProperty("DBPORT");
+			_log.info("properties loaded");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -177,8 +180,10 @@ public class PostgresDataReader implements IDataProduct {
 			
 			
 		} catch (SQLException e) {
+			_log.error("POSTGRES READER:"+e.getMessage());
 			e.printStackTrace();
 		} catch (Exception e) {
+			_log.error("POSTGRES READER:"+e.getMessage());
 			e.printStackTrace();
 		}
 
