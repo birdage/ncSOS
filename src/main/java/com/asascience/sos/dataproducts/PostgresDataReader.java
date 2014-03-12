@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -179,14 +181,14 @@ public class PostgresDataReader implements IDataProduct {
 			}
 			
 			
-		} catch (SQLException e) {
-			_log.error("POSTGRES READER SQL EXCEPTION:"+e.getMessage()+"\n"+e.getStackTrace());
-			e.printStackTrace();
 		} catch (Exception e) {
-			_log.error("POSTGRES READER:"+e.getMessage()+"\n"+e.getStackTrace());
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			 // stack trace as a string
+			_log.error("POSTGRES READER:"+e.getMessage()+"\n"+sw.toString());
 			e.printStackTrace();
 		}
-
 	}
 	
 	/**
