@@ -145,6 +145,8 @@ public class PostgresDataReader implements IDataProduct {
 	
 	public void setup() {
 		// check that the data is setup
+		_log.warn("requested offering:"+requestedOfferings);
+		_log.warn("requested offering:"+requestedOfferings.length);
 		try {
 			st = connection.createStatement();
 			//checks that the connection is valid
@@ -511,6 +513,7 @@ public class PostgresDataReader implements IDataProduct {
 
 	public void printResultsSet(ResultSet rs) throws SQLException {
 		while (rs.next()) {
+			_log.warn("SQL Resp Info:"+rs.getString(1));
 			System.out.println(rs.getString(1));
 		}
 		rs.close();
@@ -790,6 +793,9 @@ public class PostgresDataReader implements IDataProduct {
 
 	public HashMap<Integer, String> getStationNames() {
 		HashMap<Integer, String> stationHash = new HashMap<Integer, String>();
+		_log.info("Requested Offerings"+requestedOfferings);
+		_log.info("Requested Offerings"+requestedOfferings.length);
+		_log.info("Requested Offerings"+requestedOfferings[0]);
 		for (int i = 0; i < requestedOfferings.length; i++) {
 			stationHash.put(i, requestedOfferings[i]);
 		}
