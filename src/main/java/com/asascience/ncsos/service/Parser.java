@@ -12,7 +12,6 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
@@ -35,7 +34,7 @@ public class Parser {
 	public static final String USECACHE = "usecache";
 	public static final String XML = "xml";
 	private LowerCaseStringMap queryParameters;
-	private Logger _log;
+	private static org.slf4j.Logger _log = org.slf4j.LoggerFactory.getLogger(Parser.class);
 	private Map<String, String> coordsHash;
 	private final String defService = "sos";
 	private final String defVersion = "1.0.0";
