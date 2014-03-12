@@ -21,11 +21,15 @@ import java.util.Properties;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -145,7 +149,7 @@ public class PostgresDataReader implements IDataProduct {
 	
 	public void setup() {
 		// check that the data is setup
-		_log.warn("requested offering:"+requestedOfferings);
+		_log.warn("requested offering:"+requestedOfferings[0]);
 		_log.warn("requested offering:"+requestedOfferings.length);
 		try {
 			st = connection.createStatement();
@@ -162,6 +166,7 @@ public class PostgresDataReader implements IDataProduct {
 					rs = makeSqlRequest(doesTableExist_CMD(requestedOfferings[i]));
 					//is an offering available 
 					if (getBooleanValResultsSet(rs)){
+						_log.warn("Table requested does exist:"+requestedOfferings[i]);
 						//add the offering to the list
 						requestedOfferingList.add(requestedOfferings[i]);
 						//add the station parameteres to a list, make sure to put it just as the resource name
@@ -170,6 +175,8 @@ public class PostgresDataReader implements IDataProduct {
 						queryResourceRegistry_Params(requestedOfferings[i].substring(1, requestedOfferings[i].length()-5));
 						//get meta dota about a resource from the RR, make sure to use just the resource name
 						queryResourceResistry_Extents(requestedOfferings[i].substring(1, requestedOfferings[i].length()-5));
+					}else{
+						_log.error("Table requested DOES NOT EXIST!!!!:"+requestedOfferings[i]);
 					}
 				}
 				//if these are not set then poop
@@ -276,21 +283,33 @@ public class PostgresDataReader implements IDataProduct {
 	 * @return
 	 * @throws Exception 
 	 */
-	public String queryResoureResistry(String offering,String queryUrl, String serviceOp,String params) throws Exception{
+	public String queryResoureResistry(String offering,String queryUrl, String serviceOp, String params) throws Exception{
 		CloseableHttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(queryUrl);
+		
+		int timeout = 5; // seconds
+		HttpParams httpParams = client.getParams();
+		httpParams.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, timeout * 1000);
+		httpParams.setParameter(CoreConnectionPNames.SO_TIMEOUT, timeout * 1000);
  
 		// add header
 		post.setHeader("User-Agent", USER_AGENT);
- 
+
+	    
 		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
 		String data = "{\"serviceRequest\": {\"serviceName\": \"resource_registry\", "
 				+ "\"params\": {"+params+"}, "
 						+ "\"serviceOp\": \""+serviceOp+"\"}}";
+		
 		urlParameters.add(new BasicNameValuePair("payload", data));
+		
 		post.setEntity(new UrlEncodedFormEntity(urlParameters));
+		
+		
+		_log.warn("about to make post request to 5000 service");
 		HttpResponse response = client.execute(post);
 		int respCode = response.getStatusLine().getStatusCode();
+		_log.warn("completed request to 5000 service with a status code of:"+Integer.toString(respCode));
 		//System.out.println("Response Code : " + respCode);
 		
 		// if post was successful
