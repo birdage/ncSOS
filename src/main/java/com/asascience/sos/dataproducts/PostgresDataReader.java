@@ -180,10 +180,10 @@ public class PostgresDataReader implements IDataProduct {
 			
 			
 		} catch (SQLException e) {
-			_log.error("POSTGRES READER:"+e.getMessage());
+			_log.error("POSTGRES READER SQL EXCEPTION:"+e.getMessage()+"\n"+e.getStackTrace());
 			e.printStackTrace();
 		} catch (Exception e) {
-			_log.error("POSTGRES READER:"+e.getMessage());
+			_log.error("POSTGRES READER:"+e.getMessage()+"\n"+e.getStackTrace());
 			e.printStackTrace();
 		}
 
