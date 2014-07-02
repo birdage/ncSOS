@@ -287,7 +287,7 @@ public class PostgresDataReader implements IDataProduct {
 		CloseableHttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(queryUrl);
 		
-		int timeout = 5; // seconds
+		int timeout = 10; // seconds
 		HttpParams httpParams = client.getParams();
 		httpParams.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, timeout * 1000);
 		httpParams.setParameter(CoreConnectionPNames.SO_TIMEOUT, timeout * 1000);
