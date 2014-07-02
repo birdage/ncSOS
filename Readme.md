@@ -11,14 +11,15 @@ Current Stable version of SOS used: **RC8**
 * move zip file to ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
 * ```cd``` to ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
 * unzip/deflate zip file (i.e ```unzip postSOS-1.0.0.zip```)
+* make sure to move the sos_properties to "/"
 
 ### check the following
 * postSOS-1.0.jar should be visible in ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
 * httpcore-4.3.2.jar should be visible in ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
 * httpclient-4.3.3.jar should be visible in ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
 * joda-time-2.3.jar should be visible in ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
-* there should be a ```sos_resources``` directory in ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib```
-* there should be a ```properties``` and ```templates``` directory in ```/{locationofgeonode}/geonode/geoserver/geoserver/WEB-INF/lib/sos_resources```
+* there should be a ```sos_resources``` directory in ```/```
+* there should be a ```properties``` and ```templates``` directory in ```sos_resources```
 
 ## Building a release version
 * pull down source
