@@ -79,7 +79,7 @@ public class PostgresDataReaderTest {
 		//is there data
 		assertTrue(a!=null);
 		assertTrue(a.size()>0);
-		//is it valiud
+		//is it valid
 		assertTrue(a.get(0)!=null);
 		//is there only one set of data for a request
 		assertTrue(a.size()==1);
@@ -169,7 +169,7 @@ public class PostgresDataReaderTest {
 		String table = grabFDT(dr);
 		dr.setOfferings(table);
 		dr.setup();
-		String val =dr.queryResoureResistry(table.substring(1, table.length()-5), "http://localhost:5000/ion-service/resource_registry/find_resources", "find_resources" ,"'object_id': '"+table.substring(1, table.length()-5)+"', \"restype\": \"DataProduct\"");
+		String val =dr.queryResoureResistry(table.substring(1, table.length()-5), "resource_registry" , "http://localhost:5000/ion-service/resource_registry/find_resources", "find_resources" ,"'object_id': '"+table.substring(1, table.length()-5)+"', \"restype\": \"DataProduct\"");
 		assertNotNull(val);
 	}
 	
