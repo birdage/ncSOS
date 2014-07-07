@@ -6,6 +6,10 @@ Current Stable version of SOS used: **RC8**
 ### DATA MUST BE LOADED VIA COI SERVICES TEST ([TABLELOADER](https://github.com/ooici/coi-services/blob/master/ion/services/eoi/table_loader.py)) 
 	using the following command `nose -vs -a INTMAN ion.services.eoi.test.test_table_loader` it will create a breakpoint in coi to test on.
 
+example request...
+* getCaps `http://localhost:8080/geoserver/ows?request=getCapabilities&service=sos&version=1.0.0&offering=_9ad8acf0581b48aa9557fa610e04d670_view&responseFormat=text%2Fxml%3Bsubtype%3D%22om%2F1.0.0%22`
+* getObs `http://localhost:8080/geoserver/ows?request=getObservation&service=sos&version=1.0.0&observedProperty=time,temp&offering=_9ad8acf0581b48aa9557fa610e04d670_view&responseFormat=text%2Fxml%3Bsubtype%3D%22om%2F1.0.0%22`	
+
 * integrated geoserver requirements to pom file also added connection to ows service [here](https://github.com/birdage/ncSOS/blob/postsos/src/main/java/applicationContext.xml) with the entry to the service being [here](https://github.com/birdage/ncSOS/blob/postsos/src/main/java/sos_entry.java) as far as i am aware it needs to reside in the default package location
 * started abstracting the dataset through an interface, de-coupled the majority of the getCaps NC calls to function calls.
 
