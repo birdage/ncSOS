@@ -3,6 +3,9 @@ Current Stable version of SOS used: **RC8**
 =======
 ## postSOS update
 
+### DATA MUST BE LOADED VIA COI SERVICES TEST ([TABLELOADER](https://github.com/ooici/coi-services/blob/master/ion/services/eoi/table_loader.py)) 
+	using the following command `nose -vs -a INTMAN ion.services.eoi.test.test_table_loader` it will create a breakpoint in coi to test on.
+
 * integrated geoserver requirements to pom file also added connection to ows service [here](https://github.com/birdage/ncSOS/blob/postsos/src/main/java/applicationContext.xml) with the entry to the service being [here](https://github.com/birdage/ncSOS/blob/postsos/src/main/java/sos_entry.java) as far as i am aware it needs to reside in the default package location
 * started abstracting the dataset through an interface, de-coupled the majority of the getCaps NC calls to function calls.
 
@@ -33,5 +36,10 @@ use either the ```build.sh``` script or do the following
 * grab current resources and update zip file ```zip -r ./release/postSOS-1.0.0.zip ./sos_resources/*```
 * grab required dependancies ```zip -j ./release/postSOS-1.0.0.zip ./jar/*```
 
+## Using the service
 
+There are two files to take note of when using the service, the first is the [applicationContent.xml](https://github.com/birdage/ncSOS/blob/master/src/main/java/applicationContext.xml), the second is the [sos_entry](https://github.com/birdage/ncSOS/blob/master/src/main/java/sos_entry.java). These two files combined tell the system where and how the response is processed.
+
+There is a service up command there tells the user if the sos service is running on geonode
+`http://{server/port}/geoserver/ows?request=echo&service=sos&version=1.0.0`, request can then be replaced with `getCapabilities` or `getObservation`. At present there is not enough meta data pass through the system to make performing a describe sensor worth while.
 

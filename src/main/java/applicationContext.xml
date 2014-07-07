@@ -2,8 +2,8 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-    <!-- Spring will reference the instance of the HelloWorld class
-           by the id name "helloService" -->
+    <!-- Spring will reference the instance of the sos class
+           by the id name "sosservice" -->
     <bean id="sosService" class="sos_entry">
         </bean>
 

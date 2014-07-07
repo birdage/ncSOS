@@ -19,22 +19,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.methods.*;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 
 import com.asascience.ncsos.cdmclasses.iStationData;
 
@@ -68,6 +75,7 @@ public class PostgresDataReader implements IDataProduct {
 	private String DBPASS = null;
 	private String DBSERVER = null;
 	private String DBPORT = null;
+	private String ERDDAP_SERVER = null;
 	private String TITLE = "-------- PostgreSQL JDBC Connection Testing ------------";
 	private String CONNECTION_PASSED = "Connection working...";
 	
@@ -139,6 +147,7 @@ public class PostgresDataReader implements IDataProduct {
 			this.DBPASS = prop.getProperty("DBPASS");
 			this.DBSERVER = prop.getProperty("DBSERVER");
 			this.DBPORT = prop.getProperty("DBPORT");
+			this.ERDDAP_SERVER = prop.getProperty("ERDDAP_SERVER");
 			_log.info("properties loaded");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -149,16 +158,16 @@ public class PostgresDataReader implements IDataProduct {
 	
 	public void setup() {
 		// check that the data is setup
-		_log.warn("requested offering:"+requestedOfferings[0]);
-		_log.warn("requested offering:"+requestedOfferings.length);
+		//_log.warn("requested offering:"+requestedOfferings[0]);
+		//_log.warn("requested offering:"+requestedOfferings.length);
 		try {
 			st = connection.createStatement();
 			//checks that the connection is valid
-			rs = makeSqlRequest("select Version()");
-			printResultsSet(rs);
+			//rs = makeSqlRequest("select Version()");
+			//printResultsSet(rs);
 
-			rs = makeSqlRequest(SessionStartup);
-			printResultsSet(rs);
+			//rs = makeSqlRequest(SessionStartup);
+			//printResultsSet(rs);
 			
 			//station information
 			if (requestedOfferings != null) {
@@ -207,17 +216,17 @@ public class PostgresDataReader implements IDataProduct {
 	 */
 	public void queryResourceResistry_Extents(String offering) throws Exception{
 
-		String result = queryResoureResistry(offering, server+"/ion-service/resource_registry/find_resources", "find_resources" ,"\"object_id\": \""+offering+"\", \"restype\": \"DataProduct\"");
+		String result = queryResoureResistry(offering, "resource_registry" ,server+"/ion-service/resource_registry/find_resources", "find_resources" ,"\"object_id\": \""+offering+"\", \"restype\": \"DataProduct\"");
 		if (result!=null){
 			JSONArray obj = ((new JSONObject(result.toString())).getJSONObject(DATA_JSON_NODE)).getJSONArray(GATEWAY_RESPONSE_JSON_NODE);
 			JSONArray k  = (JSONArray) obj.get(0);
 			for (int i = 0; i < k.length(); i++) {
 				try {
 					JSONObject newObk = (JSONObject) k.get(i);
-					JSONObject geoBounds = (JSONObject) newObk.get(GEOSPATIAL_BOUNDS);
+					//JSONObject geoBounds = (JSONObject) newObk.get(GEOSPATIAL_BOUNDS);
 					JSONObject tempBounds = (JSONObject) newObk.get(NOMINAL_DATETIME);
 					//SET THE BOUNDS
-					setTheBounds(geoBounds,tempBounds);
+					setTheBounds(null,tempBounds);
  					//information has been found!
  					break;
 				} catch (Exception e) {
@@ -237,13 +246,18 @@ public class PostgresDataReader implements IDataProduct {
 	
 	
 	private void setTheBounds(JSONObject geoBounds, JSONObject tempBounds) {
-	    
-		double lon_w = geoBounds.getDouble("geospatial_longitude_limit_west");
-		double lon_e = geoBounds.getDouble("geospatial_longitude_limit_east");
-		double lat_n = geoBounds.getDouble("geospatial_latitude_limit_north");
-		double lat_s = geoBounds.getDouble("geospatial_latitude_limit_south");
+	    if (geoBounds!=null){
+			double lon_w = geoBounds.getDouble("geospatial_longitude_limit_west");
+			double lon_e = geoBounds.getDouble("geospatial_longitude_limit_east");
+			double lat_n = geoBounds.getDouble("geospatial_latitude_limit_north");
+			double lat_s = geoBounds.getDouble("geospatial_latitude_limit_south");
+			latLonRects.put(0, new LatLonRect(lat_s, lon_w, lat_n, lon_e));
+	    }
+	    else{
+	    	latLonRects.put(0, new LatLonRect(-90, -180, 90, 180));	
+	    }
 		
-		latLonRects.put(0, new LatLonRect(lat_s, lon_w, lat_n, lon_e));
+		
 		RR_geo_bounds = true;
 		
 		 
@@ -253,7 +267,7 @@ public class PostgresDataReader implements IDataProduct {
 		
 		//tempBounds
 		Object st = tempBounds.get("start_datetime");
-		System.out.println(st.toString());
+		System.out.println("startdate "+st.toString());
 		if (st instanceof String){		
 		}else if  (st instanceof Float){
 			//means its seconds since 1970-01-01
@@ -263,7 +277,7 @@ public class PostgresDataReader implements IDataProduct {
 		}
 
 		Object ed = tempBounds.get("end_datetime");
-		System.out.println(ed.toString());
+		System.out.println("enddate "+ed.toString());
 		if (ed instanceof String){
 		}else if  (ed instanceof Float){
 			//means its seconds since 1970-01-01
@@ -280,10 +294,11 @@ public class PostgresDataReader implements IDataProduct {
 	 * @param offering
 	 * @param queryUrl
 	 * @param params
+	 * @param string 
 	 * @return
 	 * @throws Exception 
 	 */
-	public String queryResoureResistry(String offering,String queryUrl, String serviceOp, String params) throws Exception{
+	public String queryResoureResistry(String offering,String serviceOption,  String queryUrl, String serviceOp, String params) throws Exception{
 		CloseableHttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(queryUrl);
 		
@@ -297,8 +312,8 @@ public class PostgresDataReader implements IDataProduct {
 
 	    
 		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-		String data = "{\"serviceRequest\": {\"serviceName\": \"resource_registry\", "
-				+ "\"params\": {"+params+"}, "
+		String data = "{\"serviceRequest\": {\"serviceName\": \""+serviceOption+"\", "
+						+ "\"params\": {"+params+"}, "
 						+ "\"serviceOp\": \""+serviceOp+"\"}}";
 		
 		urlParameters.add(new BasicNameValuePair("payload", data));
@@ -330,7 +345,6 @@ public class PostgresDataReader implements IDataProduct {
 		return null;
 	}
 	
-	
 	/**
 	 * read parameter information from the resource registry
 	 * @param offering minus the prefix and suffix
@@ -338,41 +352,35 @@ public class PostgresDataReader implements IDataProduct {
 	 */
 	@SuppressWarnings("deprecation")
 	public void queryResourceRegistry_Params(String offering) throws Exception {
-		String result = queryResoureResistry(offering, server+"/ion-service/resource_registry/read", "read" ,"\"object_id\": \""+offering+"\"");
-		
-		System.out.println(result.toString());
-		
+		//get the dataset id used by erddap
+		String result = queryResoureResistry(offering,"resource_registry", server+"/ion-service/resource_registry/find_subjects", "find_subjects" ,"\"object\": \""+offering+"\", \"predicate\": \"hasDataset\", \"id_only\":true");
+				
+		//System.out.println(result.toString());		
 		if (result!=null){
-			// parse the json response and get the data/gatewayresponse
-			JSONObject obj = ((new JSONObject(result.toString())).getJSONObject(DATA_JSON_NODE)).getJSONObject(GATEWAY_RESPONSE_JSON_NODE);
-			String stationStatek = obj.getString("lcstate");
-			// get param dict
-			JSONObject l = obj.getJSONObject("parameter_dictionary");
-			// number of variables
-			int val = l.getInt("_ParameterDictionary__count");
-	
-			// loop through the parameters and get the units
-			HashMap<String, String> unitHash = new HashMap<String, String>();
-			for (int i = 0; i < stationParameterList.get(offering).length; i++) {
-				String param = stationParameterList.get(offering)[i];
-				if (!ignoreParamList.contains(param)) {
-					try {
-						JSONArray paramObject = l.getJSONArray(param);
-						JSONObject actualParamObject = (JSONObject) paramObject
-								.get(1);
-						String paramUnits = actualParamObject.getString("uom");
-						unitHash.put(param, paramUnits);
-						// JSONObject d
-						// =actualParamObject.getJSONObject("param_type");
-					} catch (Exception e) {
-						_log.error("POSTGRES READER:"+"invalid results from RR:"+e.getMessage());
-						unitHash.put(param, "unknown");
-					}
-	
+			JSONObject obj = ((new JSONObject(result.toString())).getJSONObject(DATA_JSON_NODE));
+			JSONArray d = obj.getJSONArray("GatewayResponse");
+			d = d.getJSONArray(0);
+			String data_set_id = (String) d.get(0);
+			//get the param dict from the sgs
+			result = queryResoureResistry(data_set_id, "data_product_management" ,server+"/ion-service/data_product_management/get_data_product_parameters", "get_data_product_parameters" ,"\"data_product_id\": \""+data_set_id+"\", \"id_only\":false");
+			obj = ((new JSONObject(result.toString())).getJSONObject(DATA_JSON_NODE));
+			d = obj.getJSONArray("GatewayResponse");
+			HashMap<String, String> unitHash = new HashMap<>();
+			for (int i = 0; i < d.length(); i++) {
+				//param name
+				obj = (JSONObject) d.get(i);
+				String param = obj.getString("name");
+				try {
+					
+					//units									
+					String paramUnits = obj.getString("units");
+					unitHash.put(param, paramUnits);
+				}catch (Exception e) {
+					unitHash.put(param, "unknown");
 				}
 			}
-			// finally add the units to the main hash
-			unitList.put(offering, unitHash);
+			unitList.put(offering, unitHash);					
+		
 		}else{
 			_log.error("POSTGRES READER:"+"could not get result RR");
 		}

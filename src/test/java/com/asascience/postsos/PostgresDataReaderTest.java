@@ -79,7 +79,7 @@ public class PostgresDataReaderTest {
 		//is there data
 		assertTrue(a!=null);
 		assertTrue(a.size()>0);
-		//is it valiud
+		//is it valid
 		assertTrue(a.get(0)!=null);
 		//is there only one set of data for a request
 		assertTrue(a.size()==1);
@@ -111,6 +111,9 @@ public class PostgresDataReaderTest {
 	@Test
 	public void test_DR_GetMin_Max_LatLonBounds() throws Exception {
 		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
+		
 		dr.setup();
 		assertNotNull(dr.getLatLonBounds());
 		//check bounds
@@ -149,7 +152,7 @@ public class PostgresDataReaderTest {
 		String table = grabFDT(dr);
 		dr.setOfferings(table);
 		dr.setup();
-		assertNotNull(dr.getUnitsOfVariable(table.substring(1, table.length()-5),"density"));
+		assertNotNull(dr.getUnitsOfVariable(table.substring(1, table.length()-5),"temp"));
 	}
 	
 	@Test
@@ -169,7 +172,7 @@ public class PostgresDataReaderTest {
 		String table = grabFDT(dr);
 		dr.setOfferings(table);
 		dr.setup();
-		String val =dr.queryResoureResistry(table.substring(1, table.length()-5), "http://localhost:5000/ion-service/resource_registry/find_resources", "find_resources" ,"'object_id': '"+table.substring(1, table.length()-5)+"', \"restype\": \"DataProduct\"");
+		String val =dr.queryResoureResistry(table.substring(1, table.length()-5), "resource_registry" , "http://localhost:5000/ion-service/resource_registry/find_resources", "find_resources" ,"'object_id': '"+table.substring(1, table.length()-5)+"', \"restype\": \"DataProduct\"");
 		assertNotNull(val);
 	}
 	
@@ -198,7 +201,7 @@ public class PostgresDataReaderTest {
 	
 	@Test
 	public void test_DR_variableAvailable() throws Exception {
-		PostgresDataReader dr = new PostgresDataReader();
+		PostgresDataReader dr = new PostgresDataReader();		
 		String table = grabFDT(dr);
 		dr.setOfferings(table);
 		dr.setup();
@@ -209,11 +212,11 @@ public class PostgresDataReaderTest {
 	
 	@Test
 	public void test_SR_getData() throws Exception {
-		PostgresDataReader dr = new PostgresDataReader();
+		PostgresDataReader dr = new PostgresDataReader();		
 		String table = grabFDT(dr);
 		dr.setOfferings(table);
-		
-		postgresStationData st = new postgresStationData();
+		dr.setup();
+		postgresStationData st = (postgresStationData) dr.getStationData();
 		String[] variables = {"temp"};
 		st.setParms(table, null, variables);
 		String ret = st.createDataString(0);
@@ -223,53 +226,51 @@ public class PostgresDataReaderTest {
 
 	@Test
 	public void test_SR_getDataFromDB_noEventTime() throws Exception {
-		PostgresDataReader dr = new PostgresDataReader();
+		PostgresDataReader dr = new PostgresDataReader();		
 		String table = grabFDT(dr);
 		dr.setOfferings(table);
 		dr.setup();
 		postgresStationData st = (postgresStationData) dr.getStationData();
-		String[] variables = {"time","temp","density"};
-		st.setParms("_9de0c6acec074ab0bdf706ed1f99f6df_view", null, variables);
+		String[] variables = {"time","temp"};
+		st.setParms(table, null, variables);
 		String ret = st.createDataString(0);
 		System.out.println(ret);
 		assertNotNull(ret);
-		assertTrue(ret.startsWith("2011-02-11T01:01:01.000Z"));
+		assertTrue(ret.startsWith("1900-01-01"));
 	}	
 	
 	@Test
-	public void test_SR_getDataFromDB_SingleEventTime() throws Exception {
+	public void test_SR_getDataFromDB_InvalidSingleEventTime() throws Exception {
 		PostgresDataReader dr = new PostgresDataReader();
 		String table = grabFDT(dr);
 		dr.setOfferings(table);
 		dr.setup();
 		postgresStationData st = (postgresStationData) dr.getStationData();
-		String[] variables = {"time","temp","density"};
+		String[] variables = {"time","temp"};
 		String startDate = "2011-02-11T04:01:01.000Z";
 		st.setParms(table, new String[]{startDate}, variables);
 		String ret = st.createDataString(0);
 		System.out.println(ret);
-		assertNotNull(ret);
-		String[] splitString = ret.split(" ");
-		assertEquals(1,splitString.length,0);
-		assertTrue(ret.startsWith("2011-02-11T04:01:01.000Z"));
+		assertEquals("",ret);
 	}	
 	
 	@Test
 	public void test_SR_getDataFromDB_SingleEventTime2() throws Exception {
 		PostgresDataReader dr = new PostgresDataReader();
 		String table = grabFDT(dr);
+		System.out.println("SingleEventTime"+table);
 		dr.setOfferings(table);
 		dr.setup();
 		postgresStationData st = (postgresStationData) dr.getStationData();
-		String[] variables = {"time","temp","density"};
-		String startDate = "2011-02-11T12:01:01.000Z";
+		String[] variables = {"time","temp"};
+		String startDate = "1900-01-01T00:01:30.000Z";
 		st.setParms(table, new String[]{startDate}, variables);
 		String ret = st.createDataString(0);
 		System.out.println(ret);
 		assertNotNull(ret);
-		String[] splitString = ret.split(" ");
-		assertEquals(1,splitString.length,0);
-		assertTrue(ret.startsWith("2011-02-11T12:01:01.000Z"));
+		String[] splitString = ret.split(";");
+		String val = splitString[0].split(",")[1];
+		assertEquals(90.0,Double.valueOf(val),0.0);
 	}	
 	
 	@Test
@@ -279,7 +280,34 @@ public class PostgresDataReaderTest {
 		dr.setOfferings(table);
 		dr.setup();
 		postgresStationData st = (postgresStationData) dr.getStationData();
-		String[] variables = {"time","temp","density"};
+		String[] variables = {"time","temp"};
+		String startDate = "1801-02-11T04:01:01.000Z";
+		String endDate = "2011-02-11T12:01:01.000Z";
+		
+		st.setParms(table, new String[]{startDate,endDate}, variables);
+		
+		String ret = st.createDataString(0);
+		System.out.println(ret);
+		assertNotNull(ret);
+		String[] splitString = ret.split(";");
+		String val = splitString[0].split(",")[1];
+		assertEquals(0.0,Double.valueOf(val),0.0);		
+		
+	}	
+	
+	
+	@Test
+	/**
+	 * data needs to be created in the tableloader tests from coi services
+	 * @throws Exception
+	 */
+	public void test_SR_getDataFromDB_OutsideEventTimeRange() throws Exception {
+		PostgresDataReader dr = new PostgresDataReader();
+		String table = grabFDT(dr);
+		dr.setOfferings(table);
+		dr.setup();
+		postgresStationData st = (postgresStationData) dr.getStationData();
+		String[] variables = {"time","temp"};
 		String startDate = "2011-02-11T04:01:01.000Z";
 		String endDate = "2011-02-11T12:01:01.000Z";
 		
@@ -288,10 +316,7 @@ public class PostgresDataReaderTest {
 		String ret = st.createDataString(0);
 		System.out.println(ret);
 		assertNotNull(ret);
-		String[] splitString = ret.split(" ");
-		assertEquals(9,splitString.length,0);
-		assertTrue(ret.startsWith("2011-02-11T12:01:01.000Z"));
+		assertTrue(ret.contentEquals(""));
 	}	
-	
 	
 }
