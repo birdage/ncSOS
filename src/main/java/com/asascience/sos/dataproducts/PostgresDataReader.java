@@ -158,13 +158,13 @@ public class PostgresDataReader implements IDataProduct {
 	
 	public void setup() {
 		// check that the data is setup
-		_log.warn("requested offering:"+requestedOfferings[0]);
-		_log.warn("requested offering:"+requestedOfferings.length);
+		//_log.warn("requested offering:"+requestedOfferings[0]);
+		//_log.warn("requested offering:"+requestedOfferings.length);
 		try {
 			st = connection.createStatement();
 			//checks that the connection is valid
-			rs = makeSqlRequest("select Version()");
-			printResultsSet(rs);
+			//rs = makeSqlRequest("select Version()");
+			//printResultsSet(rs);
 
 			//rs = makeSqlRequest(SessionStartup);
 			//printResultsSet(rs);
@@ -223,10 +223,10 @@ public class PostgresDataReader implements IDataProduct {
 			for (int i = 0; i < k.length(); i++) {
 				try {
 					JSONObject newObk = (JSONObject) k.get(i);
-					JSONObject geoBounds = (JSONObject) newObk.get(GEOSPATIAL_BOUNDS);
+					//JSONObject geoBounds = (JSONObject) newObk.get(GEOSPATIAL_BOUNDS);
 					JSONObject tempBounds = (JSONObject) newObk.get(NOMINAL_DATETIME);
 					//SET THE BOUNDS
-					setTheBounds(geoBounds,tempBounds);
+					setTheBounds(null,tempBounds);
  					//information has been found!
  					break;
 				} catch (Exception e) {
@@ -246,13 +246,18 @@ public class PostgresDataReader implements IDataProduct {
 	
 	
 	private void setTheBounds(JSONObject geoBounds, JSONObject tempBounds) {
-	    
-		double lon_w = geoBounds.getDouble("geospatial_longitude_limit_west");
-		double lon_e = geoBounds.getDouble("geospatial_longitude_limit_east");
-		double lat_n = geoBounds.getDouble("geospatial_latitude_limit_north");
-		double lat_s = geoBounds.getDouble("geospatial_latitude_limit_south");
+	    if (geoBounds!=null){
+			double lon_w = geoBounds.getDouble("geospatial_longitude_limit_west");
+			double lon_e = geoBounds.getDouble("geospatial_longitude_limit_east");
+			double lat_n = geoBounds.getDouble("geospatial_latitude_limit_north");
+			double lat_s = geoBounds.getDouble("geospatial_latitude_limit_south");
+			latLonRects.put(0, new LatLonRect(lat_s, lon_w, lat_n, lon_e));
+	    }
+	    else{
+	    	latLonRects.put(0, new LatLonRect(-90, -180, 90, 180));	
+	    }
 		
-		latLonRects.put(0, new LatLonRect(lat_s, lon_w, lat_n, lon_e));
+		
 		RR_geo_bounds = true;
 		
 		 
@@ -262,7 +267,7 @@ public class PostgresDataReader implements IDataProduct {
 		
 		//tempBounds
 		Object st = tempBounds.get("start_datetime");
-		System.out.println(st.toString());
+		System.out.println("startdate "+st.toString());
 		if (st instanceof String){		
 		}else if  (st instanceof Float){
 			//means its seconds since 1970-01-01
@@ -272,7 +277,7 @@ public class PostgresDataReader implements IDataProduct {
 		}
 
 		Object ed = tempBounds.get("end_datetime");
-		System.out.println(ed.toString());
+		System.out.println("enddate "+ed.toString());
 		if (ed instanceof String){
 		}else if  (ed instanceof Float){
 			//means its seconds since 1970-01-01
@@ -360,48 +365,22 @@ public class PostgresDataReader implements IDataProduct {
 			result = queryResoureResistry(data_set_id, "data_product_management" ,server+"/ion-service/data_product_management/get_data_product_parameters", "get_data_product_parameters" ,"\"data_product_id\": \""+data_set_id+"\", \"id_only\":false");
 			obj = ((new JSONObject(result.toString())).getJSONObject(DATA_JSON_NODE));
 			d = obj.getJSONArray("GatewayResponse");
+			HashMap<String, String> unitHash = new HashMap<>();
 			for (int i = 0; i < d.length(); i++) {
+				//param name
 				obj = (JSONObject) d.get(i);
-				//units and name
-				String jsonUnits = obj.getString("units");
-				String jsonName = obj.getString("name");
-			}
-			
-			
-			JSONObject l = obj.getJSONObject("parameter_context");
-			// number of variables
-			int val = l.getInt("_ParameterDictionary__count");
-			
-			
-			// get param dict from erddap
-			//HashMap<String, String> unitHash = getParamsAndUnits(data_set_id);
-	
-			// loop through the parameters and get the units
-			//HashMap<String, String> unitHash = new HashMap<String, String>();
-			/*
-			for (int i = 0; i < stationParameterList.get(offering).length; i++) {
-				String param = stationParameterList.get(offering)[i];
-				if (!ignoreParamList.contains(param)) {
-					try {
-						JSONArray paramObject = l.getJSONArray(param);
-						JSONObject actualParamObject = (JSONObject) paramObject.get(1);
-						String paramUnits = actualParamObject.getString("uom");
-						unitHash.put(param, paramUnits);
-						// JSONObject d
-						// =actualParamObject.getJSONObject("param_type");
-					} catch (Exception e) {
-						_log.error("POSTGRES READER:"+"invalid results from RR:"+e.getMessage());
-						unitHash.put(param, "unknown");
-					}
-	
+				String param = obj.getString("name");
+				try {
+					
+					//units									
+					String paramUnits = obj.getString("units");
+					unitHash.put(param, paramUnits);
+				}catch (Exception e) {
+					unitHash.put(param, "unknown");
 				}
 			}
-			*/
-			// finally add the units to the main hash
-			//unitList.put(offering, unitHash);
-			int a = 1;
-			System.out.println("asdsad");
-			
+			unitList.put(offering, unitHash);					
+		
 		}else{
 			_log.error("POSTGRES READER:"+"could not get result RR");
 		}

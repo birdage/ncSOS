@@ -195,11 +195,12 @@ public class postgresStationData extends baseCDMClass implements iStationData{
 		else if(endDate!=null && startDate!=null){
 			sqlcmd = getDataField_CMD(reqStationNames.get(0),"time between '"+startDate+"' and '"+endDate+"'");
 		}
-		rs = makeSqlRequest("select Version()");
-		printResultsSet(rs);
 		
-		rs = makeSqlRequest(SessionStartup);
-		printResultsSet(rs);
+		//rs = makeSqlRequest("select Version()");
+		//printResultsSet(rs);
+		
+		//rs = makeSqlRequest(SessionStartup);
+		//printResultsSet(rs);
 		
 		//make sure you dont 
 		connection.setAutoCommit(false);
